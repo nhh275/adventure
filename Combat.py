@@ -75,7 +75,17 @@ class Combat:
                 for _ in range(numDice):
                     totalDmg += random.randint(1, sides) # roll the dice once to determine dmg for the fight, simplified
                 dmg = totalDmg + bonusDmg
-
+                # now to add ability bonus dmg, if possible
+                
+                range = itemData['weapon_range'].lower() # melee or ranged (or magic tbd)
+                desiredStat = "str" if range=='melee' else desiredStat = "dex"
+                url = f"https://www.dnd5eapi.co/api/2014/races/{combatant.get_race()}"
+                response = requests.get(url)
+                raceData = response.json()
+                for bonus in raceData['ability_bonuses']:
+                    if bonus['ability_score']['index'] == desiredStat:
+                        dmg += bonus['bonus'] # add the bonus if it matches
+                        break
                 break # just use the first weapon we find for simplicity
         # no weapon found, set default dmg
         if not dmg:

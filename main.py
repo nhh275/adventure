@@ -48,7 +48,7 @@ def roundabout(party):
     for item in classData['proficiencies']: 
         proficienciesToAdd.append(item)
     
-    terry = Character("Terry", classData['name'], raceData['name'], equipmentToAdd, proficienciesToAdd, classData['hit_die'] * 2)
+    terry = Character("Terry", classData['index'], raceData['index'], equipmentToAdd, proficienciesToAdd, classData['hit_die'] * 2)
     party.add_member(terry)
     # time to scrap 
     win = combats.goblins(party)
@@ -113,7 +113,7 @@ def main():
     print(raceData['language_desc'])
     # leave further customisation for now
 
-    player = Character(playerName, classData['name'], raceData['name'], equipmentToAdd, proficienciesToAdd, classData['hit_die'] * 2) 
+    player = Character(playerName, classData['index'], raceData['index'], equipmentToAdd, proficienciesToAdd, classData['hit_die'] * 2) 
     party = Party()
     party.add_member(player)
     # setup done 
