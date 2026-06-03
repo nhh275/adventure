@@ -1,11 +1,12 @@
 import pprint
 import random, requests
 from Enemy import Enemy
+from Combat import Combat
 def goblins(party):
     url = "https://www.dnd5eapi.co/api/2014/monsters/goblin"
     response = requests.get(url)
     goblinData = response.json() 
-    numGoblins = random.randint(1, 4)
+    numGoblins = random.randint(2, 4) # inclusive both ways
     goblins = [] # Enemy list
     for i in range(numGoblins):
         dmg = goblinData['actions'][0]['damage'][0]['damage_dice'] # this is a string like "2d6", so we need to parse it
@@ -20,10 +21,11 @@ def goblins(party):
         for _ in range(numDice):
             totalDmg += random.randint(1, sides) # roll the dice once to determine dmg for the fight, simplified
         
-        goblins.append(Enemy(f"Goblin {i+1}", goblinData['index'], goblinData['hit_points'], totalDmg+bonusDmg))
+        goblins.append(Enemy(f"Goblin {i+1}", goblinData['index'], goblinData['hit_points'], min(5, totalDmg+bonusDmg)))
     print(f"\nYou encounter {numGoblins} goblins!")
-    for goblin in goblins:
-        print(f"{goblin.name} - HP: {goblin.hp}, DMG: {goblin.dmg}")
+        
+    # undergo combat
+    combat = Combat(party.get_member_list(), goblins)
+    win = combat.start_combat()
     
-    win = True
     return win
