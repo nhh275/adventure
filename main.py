@@ -1,3 +1,5 @@
+import math
+
 import requests, pprint
 from Party import Party
 from Character import Character
@@ -54,7 +56,7 @@ def roundabout(party):
     for item in classData['proficiencies']: 
         proficienciesToAdd.append(item)
     
-    terry = Character("Terry", classData['index'], raceData['index'], equipmentToAdd, proficienciesToAdd, classData['hit_die'] * 2)
+    terry = Character("Terry", classData['index'], raceData['index'], equipmentToAdd, proficienciesToAdd, math.floor(classData['hit_die'] * 2))
     party.add_member(terry)
     # time to scrap 
     win = battles.goblins(party)

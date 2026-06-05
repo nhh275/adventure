@@ -19,15 +19,16 @@ class Combat:
     def start_combat(self):
         combatants = list(self.team.keys()) + list(self.enemies.keys())
         combatants.sort(key=lambda x: x.get_speed(), reverse=True) # sort by speed, highest first, to get turn order
-        print("\nCombat starts!")
         if not isinstance(combatants[0], Character.Character): # display combatants before enemies attack
-            print("Combat report:")
+            print("\nCombat report:")
             size = max(len(self.enemies), len(self.team))
             for position, enemy, teamMember in zip_longest(range(1,size+1), self.enemies.keys(), self.team.keys(), fillvalue=''):
-                if teamMember != '':
-                    print(f"{position}: {enemy.get_name()} - {enemy.get_hp()}HP                   {teamMember.get_name()} - {teamMember.get_hp()}HP")
-                else:
+                if teamMember == '' and enemy != '':
                     print(f"{position}: {enemy.get_name()} - {enemy.get_hp()}HP")
+                elif teamMember != '' and enemy == '':
+                    print(f"                                    {teamMember.get_name()} - {teamMember.get_hp()}HP")
+                else:
+                    print(f"{position}: {enemy.get_name()} - {enemy.get_hp()}HP                   {teamMember.get_name()} - {teamMember.get_hp()}HP")
         while True:
             for combatant in combatants:
                 if isinstance(combatant, Enemy.Enemy): # enemy turn
@@ -42,8 +43,8 @@ class Combat:
                         combatant.attack(target, self.calculate_damage(combatant, target, hit_result[1])) # roll damage, pass in 1 for crit20 and 0 otherwise
                         if not target.is_alive(): # killed its target, remove from combat
                             del self.team[target]
-                    else:
-                        print(f"{combatant.get_name()} missed their attack on {target.get_name()}.\n")    
+                    elif not hit_result[0] and hit_result[1] != 1:
+                        print(f"\n{combatant.get_name()} missed their attack on {target.get_name()}.")    
                 
                 else: # team member turn
                     if not combatant.is_alive():
@@ -51,7 +52,7 @@ class Combat:
                     if not self.enemies:
                         return self.make_result(True) # all enemies dead
                     # player can choose an enemy to attack
-                    print("Combat report:")
+                    print("\nCombat report:")
                     size = max(len(self.enemies), len(self.team))
                     for position, enemy, teamMember in zip_longest(range(1,size+1), self.enemies.keys(), self.team.keys(), fillvalue=''):
                         if teamMember == '' and enemy != '':
@@ -64,11 +65,15 @@ class Combat:
                     print(f"\n{combatant.get_name()}'s turn! Choose an enemy to attack (enter the number):")
                     
                     while True:
-                        choice = int(input("> ").strip())
-                        if choice <= len(list(self.enemies.keys())) and choice > 0:
-                            break
-                        else:
-                            print("Invalid choice. Please select a new enemy.\n")
+                        choice = 0
+                        try:
+                            choice = int(input("> ").strip())
+                            if choice <= len(list(self.enemies.keys())) and choice > 0: # check both conditions here
+                                break
+                            else:
+                                print("Invalid choice. Please select a new enemy with the numbers on the left.\n") # input is int but invalid
+                        except:
+                            print("Invalid choice. Please select a new enemy with the numbers on the left.\n") # input is not int
                     
                     target = list(self.enemies.keys())[choice-1] # pick the Enemy object
                     hit_result = self.calculate_hit(combatant, target)
@@ -76,8 +81,8 @@ class Combat:
                         combatant.attack(target, self.calculate_damage(combatant, target, hit_result[1])) # roll damage, pass in 1 for crit20 and 0 otherwise
                         if not target.is_alive(): # killed its target, remove from combat
                             del self.enemies[target]
-                    else:
-                        print(f"{combatant.get_name()} missed their attack on {target.get_name()}.\n")
+                    elif not hit_result[0] and hit_result[1] != 1: # non-critical miss, display this message instead of crit miss message
+                        print(f"\n{combatant.get_name()} missed their attack on {target.get_name()}.")
 
                     
             if not self.team:
@@ -88,14 +93,13 @@ class Combat:
                 return True
     
     def calculate_hit(self, combatant, enemy): # combatant rolling the hit
+        d20 = random.randint(1,20)
+        if d20 == 1:
+            print(f"\n{combatant.get_name()} critically missed!")
+            return (False, 1) # 1 means crit, True means hit
+        elif d20 == 20:
+            return (True, 1) # True represents hit landing
         if isinstance(combatant, Enemy.Enemy): # enemy trying to hit party member PROFICIENCY TBD
-            d20 = random.randint(1,20)
-            if d20 == 1:
-                return (False, 0) # 0 represents not-crit-20, 1 means crit for double dmg dice
-            elif d20 == 20:
-                print(f"{combatant.get_name()} landed a critical hit!")
-                return (True, 1) # True represents hit landing
-            # not a crit:
             # look for ability bonus - determine type of weapon
             if combatant.get_weapon() != None: # unarmed, use strength for physical
                 desiredStat = 'strength'
@@ -109,23 +113,15 @@ class Combat:
             response = requests.get(url)
             monsterData = response.json()
             bonus = math.floor((monsterData[desiredStat] - 10) / 2) # bonus to add or subtract
-            #print(f"ENEMY {combatant.get_name()} HIT: {d20 + bonus} vs {enemy.get_AC()} AC")
             return ((d20 + bonus >= enemy.get_AC()), 0) # True if hit >= AC, false otherwise
         else: # party member trying to hit enemy PROFICIENCY TBD
-            d20 = random.randint(1,20)
-            if d20 == 1:
-                return (False,0)
-            elif d20 == 20:
-                return (True,1)
-            # not a crit:
             # ability bonus TBD for characters
-            #print(f"FRIENDLY {combatant.get_name()} HIT: {d20} vs {enemy.get_AC()} AC")
             return ((d20 >= enemy.get_AC()),0) # True if hit >= AC, false otherwise, no crit
         
     def calculate_damage(self, combatant, enemy, crit): # return int for damage
         dmg = 0
         weapon = combatant.get_weapon()
-        if weapon != None:
+        if weapon is not None:
             dmg = weapon['damage']['damage_dice'] # this is a string like "2d6", so we need to parse it
             dmg = dmg.split('d') # split into number of dice and sides
             numDice = int(dmg[0])
@@ -155,6 +151,7 @@ class Combat:
                     if bonus['ability_score']['index'] == desiredStat:
                         dmg += bonus['bonus'] # add the bonus if it matches
                         break
+                dmg = max(1, dmg)
             else: # enemy bonus:
                 if combatant.get_weapon() != None: # unarmed, use strength for physical
                     desiredStat = 'strength'
@@ -168,9 +165,30 @@ class Combat:
                 response = requests.get(url)
                 monsterData = response.json()
                 bonus = math.floor((monsterData[desiredStat] - 10) / 2) # bonus to add or subtract
-        else: # unarmed
-            dmg = 1 # default unarmed dmg, can be changed later with better weapons
-        print(f"{combatant.get_name()} has hit {enemy.get_name()} for {dmg} damage!")
+                dmg += bonus
+                dmg = max(1, dmg)
+        else: # unarmed, weapon == None
+            bonusDmg = 0 # no str bonus by default
+            if isinstance(combatant, Character.Character):
+                url = f"https://www.dnd5eapi.co/api/2014/races/{combatant.get_race()}"
+                response = requests.get(url)
+                raceData = response.json()
+                for bonus in raceData['ability_bonuses']:
+                    if bonus['ability_score']['index'] == "str":
+                        bonusDmg = bonus['bonus'] # add the bonus if it matches strength for unarmed attack
+                        break
+            else:
+                url = f"https://www.dnd5eapi.co/api/2014/monsters/{combatant.get_type().lower()}"
+                response = requests.get(url)
+                monsterData = response.json()
+                bonusDmg = math.floor((monsterData["strength"] - 10) / 2) # bonus to add or subtract
+            dmg = max(0,1 + bonusDmg) # default unarmed dmg, can be changed later with better weapons
+            print(f"\n{combatant.get_name()} is unarmed but hits {enemy.get_name()} for {dmg} damage!")
+            return dmg
+        if crit:
+            print(f"\n{combatant.get_name()} landed a critical hit on {enemy.get_name()} with their {combatant.get_weapon()['name']} for {dmg} damage!")
+        else:
+            print(f"\n{combatant.get_name()} hits {enemy.get_name()} with their {combatant.get_weapon()['name']} for {dmg} damage!")
         return dmg
     
     def make_result(self, win):

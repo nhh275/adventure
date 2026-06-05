@@ -13,6 +13,7 @@ class Enemy:
         self.set_AC()
         
     def set_weapon(self):
+        self.weapon = None # in case no weapon found, set to None
         url = f"https://www.dnd5eapi.co/api/2014/monsters/{self.type.lower()}"
         response = requests.get(url)
         monsterData = response.json()        
@@ -20,8 +21,6 @@ class Enemy:
         if url != None:
             response = requests.get(url)
             self.weapon = response.json()
-        else:
-            self.weapon = None
     
     def set_AC(self):
         url = f"https://www.dnd5eapi.co/api/2014/monsters/{self.type.lower()}"
@@ -42,7 +41,7 @@ class Enemy:
         print(f"{self.name} has died.")
     
     def attack(self, target, dmg=0):
-        target.add_hp(-self.dmg) # armour tbd
+        target.add_hp(-dmg) # armour tbd
     
     def get_name(self):
         return self.name
@@ -59,7 +58,7 @@ class Enemy:
             self.hp = 0
             self.die()
         else:
-            print(f"{self.name} now has {self.hp} HP.\n")
+            print(f"{self.name} now has {self.hp} HP.")
 
 
     def is_alive(self):

@@ -77,7 +77,7 @@ class Character:
             self.hp = 0
             self.die()
         else:
-            print(f"{self.name} now has {self.hp} HP.\n")
+            print(f"{self.name} now has {self.hp} HP.")
         
     def is_alive(self):
         return self.alive
