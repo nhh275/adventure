@@ -1,6 +1,6 @@
 import math
 import random
-
+from itertools import zip_longest
 import requests
 import Character
 import Enemy
@@ -20,6 +20,14 @@ class Combat:
         combatants = list(self.team.keys()) + list(self.enemies.keys())
         combatants.sort(key=lambda x: x.get_speed(), reverse=True) # sort by speed, highest first, to get turn order
         print("\nCombat starts!")
+        if not isinstance(combatants[0], Character.Character): # display combatants before enemies attack
+            print("Combat report:")
+            size = max(len(self.enemies), len(self.team))
+            for position, enemy, teamMember in zip_longest(range(1,size+1), self.enemies.keys(), self.team.keys(), fillvalue=''):
+                if teamMember != '':
+                    print(f"{position}: {enemy.get_name()} - {enemy.get_hp()}HP                   {teamMember.get_name()} - {teamMember.get_hp()}HP")
+                else:
+                    print(f"{position}: {enemy.get_name()} - {enemy.get_hp()}HP")
         while True:
             for combatant in combatants:
                 if isinstance(combatant, Enemy.Enemy): # enemy turn
@@ -35,25 +43,33 @@ class Combat:
                         if not target.is_alive(): # killed its target, remove from combat
                             del self.team[target]
                     else:
-                        print(f"{combatant.get_name()} missed their attack on {target.get_name()}.\n")
+                        print(f"{combatant.get_name()} missed their attack on {target.get_name()}.\n")    
+                
                 else: # team member turn
                     if not combatant.is_alive():
                         continue
                     if not self.enemies:
                         return self.make_result(True) # all enemies dead
                     # player can choose an enemy to attack
-                    print("Enemy list:")
-                    for i in range(len(self.enemies)):
-                        enemy = list(self.enemies.keys())[i]
-                        print(f"{i+1} - {enemy.get_name()} - HP: {enemy.get_hp()}")
+                    print("Combat report:")
+                    size = max(len(self.enemies), len(self.team))
+                    for position, enemy, teamMember in zip_longest(range(1,size+1), self.enemies.keys(), self.team.keys(), fillvalue=''):
+                        if teamMember == '' and enemy != '':
+                            print(f"{position}: {enemy.get_name()} - {enemy.get_hp()}HP")
+                        elif teamMember != '' and enemy == '':
+                            print(f"                                    {teamMember.get_name()} - {teamMember.get_hp()}HP")
+                        else:
+                            print(f"{position}: {enemy.get_name()} - {enemy.get_hp()}HP                   {teamMember.get_name()} - {teamMember.get_hp()}HP")
 
                     print(f"\n{combatant.get_name()}'s turn! Choose an enemy to attack (enter the number):")
+                    
                     while True:
                         choice = int(input("> ").strip())
                         if choice <= len(list(self.enemies.keys())) and choice > 0:
                             break
                         else:
                             print("Invalid choice. Please select a new enemy.\n")
+                    
                     target = list(self.enemies.keys())[choice-1] # pick the Enemy object
                     hit_result = self.calculate_hit(combatant, target)
                     if hit_result[0]: # if successful attack roll... (True, ...)
