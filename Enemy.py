@@ -2,11 +2,10 @@ import math
 import requests
 
 class Enemy:
-    def __init__(self, name, type, hp, dmg):
+    def __init__(self, name, type, hp):
         self.name = name
         self.type = type
         self.hp = hp
-        self.dmg = dmg
         self.alive = True
         self.set_speed()
         self.set_weapon() # weapon is a JSON of the item (equipment), None if none found

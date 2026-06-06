@@ -1,4 +1,4 @@
-import math
+import math, time
 import random
 from itertools import zip_longest
 import requests
@@ -7,22 +7,20 @@ import Enemy
 
 class Combat:
     def __init__(self, teamMembers, enemyMembers):
-        team_dict = {}
-        enemy_dict = {}
-        for member in teamMembers:
-            team_dict[member] = member.get_speed()
-        for enemy in enemyMembers:
-            enemy_dict[enemy] = enemy.get_speed()
-        self.team = team_dict
-        self.enemies = enemy_dict
+        self.team = teamMembers
+        self.enemies = enemyMembers
     
     def start_combat(self):
-        combatants = list(self.team.keys()) + list(self.enemies.keys())
-        combatants.sort(key=lambda x: x.get_speed(), reverse=True) # sort by speed, highest first, to get turn order
+        combatants = self.team + self.enemies # concat two lists
+        combatants.sort(key=lambda x: self.calculate_initiative(x), reverse=True) # sort by speed, highest first, to get turn order
+        print("\nTurn order:")
+        for unit in combatants:
+            print(unit.get_name())
+        time.sleep(1)
         if not isinstance(combatants[0], Character.Character): # display combatants before enemies attack
             print("\nCombat report:")
             size = max(len(self.enemies), len(self.team))
-            for position, enemy, teamMember in zip_longest(range(1,size+1), self.enemies.keys(), self.team.keys(), fillvalue=''):
+            for position, enemy, teamMember in zip_longest(range(1,size+1), self.enemies, self.team, fillvalue=''):
                 if teamMember == '' and enemy != '':
                     print(f"{position}: {enemy.get_name()} - {enemy.get_hp()}HP")
                 elif teamMember != '' and enemy == '':
@@ -37,12 +35,12 @@ class Combat:
                     if not self.team:
                         return self.make_result(False) # all team members dead
                     # enemy attacks random team member
-                    target = random.choice(list(self.team.keys())) # gets a Character from the Party
+                    target = random.choice(list(self.team)) # gets a Character from the Party
                     hit_result = self.calculate_hit(combatant, target)
                     if hit_result[0]: # if successful attack roll... (True, ...)
                         combatant.attack(target, self.calculate_damage(combatant, target, hit_result[1])) # roll damage, pass in 1 for crit20 and 0 otherwise
                         if not target.is_alive(): # killed its target, remove from combat
-                            del self.team[target]
+                            self.team.remove(target)
                     elif not hit_result[0] and hit_result[1] != 1:
                         print(f"\n{combatant.get_name()} missed their attack on {target.get_name()}.")    
                 
@@ -54,7 +52,7 @@ class Combat:
                     # player can choose an enemy to attack
                     print("\nCombat report:")
                     size = max(len(self.enemies), len(self.team))
-                    for position, enemy, teamMember in zip_longest(range(1,size+1), self.enemies.keys(), self.team.keys(), fillvalue=''):
+                    for position, enemy, teamMember in zip_longest(range(1,size+1), self.enemies, self.team, fillvalue=''):
                         if teamMember == '' and enemy != '':
                             print(f"{position}: {enemy.get_name()} - {enemy.get_hp()}HP")
                         elif teamMember != '' and enemy == '':
@@ -68,19 +66,19 @@ class Combat:
                         choice = 0
                         try:
                             choice = int(input("> ").strip())
-                            if choice <= len(list(self.enemies.keys())) and choice > 0: # check both conditions here
+                            if choice <= len(list(self.enemies)) and choice > 0: # check both conditions here
                                 break
                             else:
                                 print("Invalid choice. Please select a new enemy with the numbers on the left.\n") # input is int but invalid
                         except:
                             print("Invalid choice. Please select a new enemy with the numbers on the left.\n") # input is not int
                     
-                    target = list(self.enemies.keys())[choice-1] # pick the Enemy object
+                    target = list(self.enemies)[choice-1] # pick the Enemy object
                     hit_result = self.calculate_hit(combatant, target)
                     if hit_result[0]: # if successful attack roll... (True, ...)
                         combatant.attack(target, self.calculate_damage(combatant, target, hit_result[1])) # roll damage, pass in 1 for crit20 and 0 otherwise
                         if not target.is_alive(): # killed its target, remove from combat
-                            del self.enemies[target]
+                            self.enemies.remove(target)
                     elif not hit_result[0] and hit_result[1] != 1: # non-critical miss, display this message instead of crit miss message
                         print(f"\n{combatant.get_name()} missed their attack on {target.get_name()}.")
 
@@ -190,6 +188,19 @@ class Combat:
         else:
             print(f"\n{combatant.get_name()} hits {enemy.get_name()} with their {combatant.get_weapon()['name']} for {dmg} damage!")
         return dmg
+    
+    def calculate_initiative(self, combatant): # Enemy or Character arg
+        d20 = random.randint(1,20)
+        if isinstance(combatant, Enemy.Enemy): # enemy initiative
+            url = f"https://www.dnd5eapi.co/api/2014/monsters/{combatant.get_type().lower()}"
+            response = requests.get(url)
+            monsterData = response.json()
+            bonus = math.floor((monsterData["dexterity"] - 10) / 2) # bonus to add or subtract
+            return (d20 + bonus) # initiative value for the combat
+        else:
+            # ability bonus TBD for characters
+            return d20
+
     
     def make_result(self, win):
             if not win:

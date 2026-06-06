@@ -21,7 +21,7 @@ def goblins(party):
         for _ in range(numDice):
             totalDmg += random.randint(1, sides) # roll the dice once to determine dmg for the fight, simplified
         
-        goblins.append(Enemy(f"Goblin {i+1}", goblinData['index'], goblinData['hit_points'], min(5, totalDmg+bonusDmg)))
+        goblins.append(Enemy(f"Goblin {i+1}", goblinData['index'], goblinData['hit_points']))
     print(f"\nYou encounter {numGoblins} goblins!")
         
     # undergo combat
