@@ -13,6 +13,7 @@ class Combat:
     def start_combat(self):
         combatants = self.team + self.enemies # concat two lists
         combatants.sort(key=lambda x: self.calculate_initiative(x), reverse=True) # sort by speed, highest first, to get turn order
+        currentCombatantCount = len(combatants)
         print("\nTurn order:")
         for unit in combatants:
             print(unit.get_name())
@@ -27,8 +28,20 @@ class Combat:
                     print(f"                                    {teamMember.get_name()} - {teamMember.get_hp()}HP")
                 else:
                     print(f"{position}: {enemy.get_name()} - {enemy.get_hp()}HP                   {teamMember.get_name()} - {teamMember.get_hp()}HP")
-        while True:
+        turn = 1
+        while True: # combat loop
+            print(f"\n                      Turn {turn}")
+            new_combatants = [] # each turn, update combatants list if any died
+            for i in range(len(combatants)):
+                if combatants[i].is_alive():
+                    new_combatants.append(combatants[i])
             for combatant in combatants:
+                if len(combatants) != currentCombatantCount:
+                    print("\nUpdated turn order:")
+                    for unit in combatants:
+                        print(unit.get_name())
+                    currentCombatantCount = len(combatants)
+                    
                 if isinstance(combatant, Enemy.Enemy): # enemy turn
                     if not combatant.is_alive(): # killed, no turn
                         continue
@@ -81,7 +94,7 @@ class Combat:
                             self.enemies.remove(target)
                     elif not hit_result[0] and hit_result[1] != 1: # non-critical miss, display this message instead of crit miss message
                         print(f"\n{combatant.get_name()} missed their attack on {target.get_name()}.")
-
+            turn += 1
                     
             if not self.team:
                 print("Your party has been defeated! Game over.")

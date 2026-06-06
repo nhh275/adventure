@@ -1,19 +1,17 @@
 import random
-
 import requests
+from Being import Being
 
 
-class Character:
+class Character(Being):
     def __init__(self, name, player_class, race, equipment, proficiencies, hp=10):
-        self.name = name
+        super().__init__(name, hp)
         self.player_class = player_class
         self.race = race
         self.equipment = equipment
         self.proficiencies = proficiencies
-        self.hp = hp
-        self.alive = True
         self.set_speed()     
-        self.set_weapon() # weapon is a JSON of the item (equipment)
+        self.set_weapon()
         self.set_AC()
         
     def set_weapon(self):
@@ -46,16 +44,6 @@ class Character:
         raceData = response.json()
         self.speed = raceData['speed'] # should be an int
     
-    def die(self):
-        self.alive = False
-        print(f"{self.name} has died.")
-    
-    def attack(self, target, dmg=0):
-        target.add_hp(-dmg) # armour tbd
-    
-    def get_name(self):
-        return self.name
-    
     def get_class(self):
         return self.player_class
     
@@ -67,26 +55,3 @@ class Character:
     
     def get_proficiencies(self):
         return self.proficiencies
-    
-    def get_hp(self):
-        return self.hp
-    
-    def add_hp(self, amount=0):
-        self.hp += amount
-        if self.hp <= 0:
-            self.hp = 0
-            self.die()
-        else:
-            print(f"{self.name} now has {self.hp} HP.")
-        
-    def is_alive(self):
-        return self.alive
-    
-    def get_speed(self):
-        return self.speed
-
-    def get_weapon(self):
-        return self.weapon
-    
-    def get_AC(self):
-        return self.AC
