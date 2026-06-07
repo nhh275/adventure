@@ -9,9 +9,6 @@ class Party:
         if character in self.members:
             self.members.remove(character)
     
-    def get_member_list(self):
-        return self.members
-    
     def get_member_by_name(self, name):
         for member in self.members:
             if member.name == name:

@@ -4,12 +4,18 @@ from Being import Being
 
 
 class Character(Being):
-    def __init__(self, name, player_class, race, equipment, proficiencies, hp=10):
+    def __init__(self, name, classData, raceData, equipment, proficiencies, s, d, c, i, w, ch, hp):
         super().__init__(name, hp)
-        self.player_class = player_class
-        self.race = race
-        self.equipment = equipment
+        self.classData = classData # whole JSON of class data
+        self.raceData = raceData # ^^ race
+        self.equipment = equipment # list
         self.proficiencies = proficiencies
+        self.strength = s
+        self.dexterity = d
+        self.constitution = c
+        self.intelligence = i
+        self.wisdom = w
+        self.charisma = ch
         self.set_speed()     
         self.set_weapon()
         self.set_AC()
@@ -39,19 +45,5 @@ class Character(Being):
         self.AC = armour    
         
     def set_speed(self):
-        url = f"https://www.dnd5eapi.co/api/2014/races/{self.race.lower()}"
-        response = requests.get(url)
-        raceData = response.json()
-        self.speed = raceData['speed'] # should be an int
+        self.speed = self.raceData['speed'] # should be an int
     
-    def get_class(self):
-        return self.player_class
-    
-    def get_race(self):
-        return self.race
-    
-    def get_equipment(self):
-        return self.equipment
-    
-    def get_proficiencies(self):
-        return self.proficiencies

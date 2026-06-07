@@ -21,11 +21,11 @@ def goblins(party):
         for _ in range(numDice):
             totalDmg += random.randint(1, sides) # roll the dice once to determine dmg for the fight, simplified
         
-        goblins.append(Enemy(f"Goblin {i+1}", goblinData['index'], goblinData['hit_points']))
+        goblins.append(Enemy(f"Goblin {i+1}", goblinData, goblinData['hit_points']))
     print(f"\nYou encounter {numGoblins} goblins!")
         
     # undergo combat
-    combat = Combat(party.get_member_list(), goblins)
+    combat = Combat(party.members, goblins)
     win = combat.start_combat()
     
     return win
