@@ -112,22 +112,95 @@ def main():
 
     print(raceData['language_desc'])
     # leave further customisation for now
+    
+    equipmentToAdd = []
+    for item in classData['starting_equipment']: # even if the class doesnt have starting equipment, check
+        for _ in range(item['quantity']):
+            equipmentToAdd.append(item['equipment'])
+    
+    if 'starting_equipment_options' in classData:
+        for optionSet in classData['starting_equipment_options']:
+            print("\nYour current equipment is as follows:") # to give more info to player about what to choose
+            for item in equipmentToAdd:
+                print(item['name'])
+            
+            numChoices = optionSet['choose']
+            print(f"Choose {numChoices} to add from the following list:")
+            print(optionSet['desc'])
+            
+            for _ in range(numChoices):
+                choice = str(input("> ").strip().lower())
+                numChosen = ord(choice) - 97 # 0 for a, for example
+                if 'options' not in optionSet['from'].keys(): # multiple options?
+                    if optionSet['from']['option_set_type'] == "equipment_category":
+                        response = requests.get(f"https://www.dnd5eapi.co{optionSet['from']['equipment_category']['url']}")
+                        listData = response.json() # json of equipment choice data
+                        numChoicesTwo = 1
+                        print(f"Choose {numChoicesTwo} to add from the following list:")
+                        for i in range(len(listData['equipment'])):
+                            print(f"{chr(i+97)}) {listData['equipment'][i]['name']}") # show each option with a number to choose from
+                        
+                        for _ in range(numChoicesTwo):
+                            choice = str(input("> ").strip().lower()) # from a, b....
+                            itemToAdd = listData['equipment'][ord(choice)-97]
+                            equipmentToAdd.append(itemToAdd)
+                else:
+                    itemType = optionSet['from']['options'][numChosen]
 
+                    if itemType['option_type'] == "counted_reference": # simple, add X of this item
+                        for _ in range(itemType['count']):
+                            itemToAdd = itemType['of']
+                            equipmentToAdd.append(itemToAdd)
+                    
+                    elif itemType['option_type'] == "choice": # expand into a category to choose from
+                        response = requests.get(f"https://www.dnd5eapi.co{itemType['choice']['from']['equipment_category']['url']}")
+                        listData = response.json() # json of equipment choice data
+                        numChoicesTwo = itemType['choice']['choose']
+                        print(f"Choose {numChoicesTwo} to add from the following list:")
+                        for i in range(len(listData['equipment'])):
+                            print(f"{chr(i+97)}) {listData['equipment'][i]['name']}") # show each option with a number to choose from
+                        
+                        for _ in range(numChoicesTwo):
+                            choice = str(input("> ").strip().lower()) # from a, b....
+                            itemToAdd = listData['equipment'][ord(choice)-97]
+                            equipmentToAdd.append(itemToAdd)
+                
+    
     party = Party()
-    create_character(party, classData, raceData, name) # create player character
+    create_character(party, classData, raceData, name, equipmentToAdd) # create player character
     # setup done 
     
     print("\nYour character is ready! Your adventure is about to unfold...\n\n")
     beginAdventure(party)
     return
 
-def create_character(party, classData, raceData, name):
-    equipmentToAdd = []
-    for item in classData['starting_equipment']: # even if the class doesnt have starting equipment, check
-        equipmentToAdd.append(item['equipment'])
-    if 'starting_equipment_options' in classData: # some classes don't have this optional equipment, so check for it first
-        if 'of' in classData['starting_equipment_options'][0]['from']['options'][0]: # some classes have options that aren't equipment, so check for that too
-            equipmentToAdd.append(classData['starting_equipment_options'][0]['from']['options'][0]['of']) # just add the first option for simplicity
+def create_character(party, classData, raceData, name, equipmentToAdd=None):
+    if equipmentToAdd is None: # non-player character
+        equipmentToAdd = []
+        for item in classData['starting_equipment']: # even if the class doesnt have starting equipment, check
+            for _ in range(item['quantity']):
+                equipmentToAdd.append(item['equipment'])
+        if 'starting_equipment_options' in classData: # some classes don't have this optional equipment, so check for it first
+            for optionSet in classData['starting_equipment_options']:
+                numChoices = optionSet['choose']
+                
+                for _ in range(numChoices):
+                    itemType = optionSet['from']['options'][0]
+
+                    if itemType['option_type'] == "counted_reference": # simple, add X of this item
+                        for _ in range(itemType['count']):
+                            itemToAdd = itemType['of']
+                            equipmentToAdd.append(itemToAdd)
+                    
+                    elif itemType['option_type'] == "choice": # expand into a category to choose from
+                        response = requests.get(f"https://www.dnd5eapi.co{itemType['choice']['from']['equipment_category']['url']}")
+                        listData = response.json() # json of equipment choice data
+                        numChoicesTwo = itemType['choice']['choose']
+                        
+                        for i in range(numChoicesTwo):
+                            itemToAdd = listData['equipment'][i]
+                            equipmentToAdd.append(itemToAdd)
+    
     proficienciesToAdd = []
     for item in classData['proficiencies']: 
         proficienciesToAdd.append(item)
@@ -145,6 +218,8 @@ def create_character(party, classData, raceData, name):
     hp = classData['hit_die'] + math.floor((scores[2]-10)/2) # generate hp from constitution modifier and class hit die
     character = Character(name, classData, raceData, equipmentToAdd, proficienciesToAdd, scores[0], scores[1], scores[2], scores[3], 
                           scores[4], scores[5], math.floor(hp*1.5)) # +50% hp to be more generous
+    print(f"{name} has the following equipment:")
+    character.show_equipment()
     party.add_member(character)
     
     

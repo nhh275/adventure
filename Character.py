@@ -19,6 +19,10 @@ class Character(Being):
         self.set_speed()     
         self.set_weapon()
         self.set_AC()
+    
+    def show_equipment(self):
+        for item in self.equipment:
+            print(item['name'])
         
     def set_weapon(self):
         self.weapon = None
