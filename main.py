@@ -1,6 +1,5 @@
 import math
 import random
-
 import requests, pprint
 from Party import Party
 from Character import Character
@@ -16,9 +15,8 @@ def choose_from_equipment_category(url, equipmentToAdd, numChoices=1):
 
     for _ in range(numChoices):
         choice = str(input("> ").strip().lower()) # from a, b....
-        itemToAdd = listData['equipment'][ord(choice)-97]
+        itemToAdd = listData['equipment'][ord(choice)%97]
         equipmentToAdd.append(itemToAdd)
-
 
 def add_default_equipment_from_category(url, equipmentToAdd, numChoices):
     response = requests.get(f"https://www.dnd5eapi.co{url}")
@@ -26,7 +24,6 @@ def add_default_equipment_from_category(url, equipmentToAdd, numChoices):
     for i in range(numChoices):
         itemToAdd = listData['equipment'][i]
         equipmentToAdd.append(itemToAdd)
-
 
 def beginAdventure(party):
     print(
@@ -152,16 +149,32 @@ def main():
     if 'starting_equipment_options' in classData:
         for optionSet in classData['starting_equipment_options']:
             print("\nYour current equipment is as follows:") # to give more info to player about what to choose
+            prevItem = ""
+            dupeCount = 1
             for item in equipmentToAdd:
-                print(item['name'])
+                if item != prevItem:
+                    if prevItem != "":
+                        if dupeCount > 1:
+                            print(f" x{dupeCount}")
+                        else:
+                            print()
+                    print(f"{item['name']}", end='')
+                    dupeCount = 1
+                else:
+                    dupeCount += 1
+                prevItem = item
+            if dupeCount > 1:
+                print(f" x{dupeCount}")
+            else:
+                print()
             
             numChoices = optionSet['choose']
-            print(f"Choose {numChoices} to add from the following list:")
+            print(f"\nChoose {numChoices} to add from the following list:")
             print(optionSet['desc'])
             
             for _ in range(numChoices):
                 choice = str(input("> ").strip().lower())
-                numChosen = ord(choice) - 97 # 0 for a, for example
+                numChosen = ord(choice) % 97 # 0 for a, for example
                 if 'options' not in optionSet['from'].keys(): # multiple options?
                     if optionSet['from']['option_set_type'] == "equipment_category":
                         choose_from_equipment_category(optionSet['from']['equipment_category']['url'], equipmentToAdd)
@@ -172,7 +185,11 @@ def main():
                         for _ in range(itemType['count']):
                             itemToAdd = itemType['of']
                             equipmentToAdd.append(itemToAdd)
-                    
+                    elif itemType['option_type'] == "multiple": # multi-add
+                        for newItem in itemType['items']:
+                            for _ in range(newItem['count']):
+                                itemToAdd = newItem['of']
+                                equipmentToAdd.append(itemToAdd)
                     elif itemType['option_type'] == "choice": # expand into a category to choose from
                         choose_from_equipment_category(itemType['choice']['from']['equipment_category']['url'], equipmentToAdd, itemType['choice']['choose'])
                 
