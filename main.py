@@ -11,12 +11,20 @@ def choose_from_equipment_category(url, equipmentToAdd, numChoices=1):
     listData = response.json() # json of equipment choice data
     print(f"Choose {numChoices} to add from the following list:")
     for i in range(len(listData['equipment'])):
-        print(f"{chr(i+97)}) {listData['equipment'][i]['name']}") # show each option with a number to choose from
+        print(f"{i+1}) {listData['equipment'][i]['name']}")
 
     for _ in range(numChoices):
-        choice = str(input("> ").strip().lower()) # from a, b....
-        itemToAdd = listData['equipment'][ord(choice)%97]
-        equipmentToAdd.append(itemToAdd)
+        while True:
+            try:
+                choice = int(input("> ").strip())
+                if 1 <= choice <= len(listData['equipment']):
+                    itemToAdd = listData['equipment'][choice - 1]
+                    equipmentToAdd.append(itemToAdd)
+                    break
+                else:
+                    print(f"Please enter a number between 1 and {len(listData['equipment'])}")
+            except ValueError:
+                print(f"Please enter a number between 1 and {len(listData['equipment'])}")
 
 def add_default_equipment_from_category(url, equipmentToAdd, numChoices):
     response = requests.get(f"https://www.dnd5eapi.co{url}")
@@ -24,6 +32,45 @@ def add_default_equipment_from_category(url, equipmentToAdd, numChoices):
     for i in range(numChoices):
         itemToAdd = listData['equipment'][i]
         equipmentToAdd.append(itemToAdd)
+
+def get_equipment_options(optionSet):
+    options = []
+    
+    if 'options' not in optionSet['from'].keys():
+        # single equipment_category case (like the cleric's  holy symbol)
+        if optionSet['from']['option_set_type'] == "equipment_category":
+            url = optionSet['from']['equipment_category']['url']
+            response = requests.get(f"https://www.dnd5eapi.co{url}")
+            listData = response.json()
+            for item in listData['equipment']:
+                display_name = item['name'][0].upper() + item['name'][1:] if item['name'] else item['name']
+                options.append((display_name, {'option_type': 'category_item', 'of': item}))
+    else:
+        # multiple options case
+        for item in optionSet['from']['options']:
+            if item['option_type'] == "counted_reference":
+                count = item['count']
+                name = item['of']['name']
+                display_name = f"{count} x {name}" if count > 1 else name
+                display_name = display_name[0].upper() + display_name[1:] if display_name else display_name
+                options.append((display_name, item))
+            elif item['option_type'] == "choice":
+                display_name = item['choice']['desc']
+                display_name = display_name[0].upper() + display_name[1:] if display_name else display_name
+                options.append((display_name, item))
+            elif item['option_type'] == "multiple":
+                item_descriptions = []
+                for sub_item in item['items']:
+                    if sub_item['option_type'] == "counted_reference":
+                        count = sub_item['count']
+                        name = sub_item['of']['name']
+                        item_desc = f"{count} x {name}" if count > 1 else name
+                        item_descriptions.append(item_desc)
+                display_name = " and ".join(item_descriptions)
+                display_name = display_name[0].upper() + display_name[1:] if display_name else display_name
+                options.append((display_name, item))
+    
+    return options
 
 def beginAdventure(party):
     print(
@@ -169,36 +216,46 @@ def main():
                 print()
             
             numChoices = optionSet['choose']
-            print(f"\nChoose {numChoices} to add from the following list:")
-            print(optionSet['desc'])
+            print(f"\nChoose {numChoices} from the following:")
+            
+            # Get available options
+            availableOptions = get_equipment_options(optionSet)
+            for i, (displayName, _) in enumerate(availableOptions, 1):
+                print(f"{i}) {displayName}")
             
             for _ in range(numChoices):
-                choice = str(input("> ").strip().lower())
-                numChosen = ord(choice) % 97 # 0 for a, for example
-                if 'options' not in optionSet['from'].keys(): # multiple options?
-                    if optionSet['from']['option_set_type'] == "equipment_category":
-                        choose_from_equipment_category(optionSet['from']['equipment_category']['url'], equipmentToAdd)
-                else:
-                    itemType = optionSet['from']['options'][numChosen]
-
-                    if itemType['option_type'] == "counted_reference": # simple, add X of this item
-                        for _ in range(itemType['count']):
-                            itemToAdd = itemType['of']
+                while True:
+                    try:
+                        choice = int(input("> ").strip())
+                        if 1 <= choice <= len(availableOptions):
+                            break
+                        else:
+                            print(f"Please enter a number between 1 and {len(availableOptions)}")
+                    except ValueError:
+                        print(f"Please enter a number between 1 and {len(availableOptions)}")
+                
+                chosenOption = availableOptions[choice - 1][1]
+                
+                if chosenOption['option_type'] == "counted_reference": # simple, add X of this item
+                    for _ in range(chosenOption['count']):
+                        itemToAdd = chosenOption['of']
+                        equipmentToAdd.append(itemToAdd)
+                elif chosenOption['option_type'] == "multiple": # multi-add
+                    for newItem in chosenOption['items']:
+                        for _ in range(newItem['count']):
+                            itemToAdd = newItem['of']
                             equipmentToAdd.append(itemToAdd)
-                    elif itemType['option_type'] == "multiple": # multi-add
-                        for newItem in itemType['items']:
-                            for _ in range(newItem['count']):
-                                itemToAdd = newItem['of']
-                                equipmentToAdd.append(itemToAdd)
-                    elif itemType['option_type'] == "choice": # expand into a category to choose from
-                        choose_from_equipment_category(itemType['choice']['from']['equipment_category']['url'], equipmentToAdd, itemType['choice']['choose'])
+                elif chosenOption['option_type'] == "choice": # expand into a category to choose from
+                    choose_from_equipment_category(chosenOption['choice']['from']['equipment_category']['url'], equipmentToAdd, chosenOption['choice']['choose'])
+                elif chosenOption['option_type'] == "category_item": # single item from equipment category
+                    equipmentToAdd.append(chosenOption['of'])
                 
     
     party = Party()
     create_character(party, classData, raceData, name, equipmentToAdd) # create player character
     # setup done 
     
-    print("\nYour character is ready! Your adventure is about to unfold...\n\n")
+    print("\nYour character is ready! The adventure is about to unfold...\n\n")
     beginAdventure(party)
     return
 
@@ -240,7 +297,7 @@ def create_character(party, classData, raceData, name, equipmentToAdd=None):
     hp = classData['hit_die'] + math.floor((scores[2]-10)/2) # generate hp from constitution modifier and class hit die
     character = Character(name, classData, raceData, equipmentToAdd, proficienciesToAdd, scores[0], scores[1], scores[2], scores[3], 
                           scores[4], scores[5], math.floor(hp*1.5)) # +50% hp to be more generous
-    print(f"{name} has the following equipment:")
+    print(f"\n{name} has the following equipment:")
     character.show_equipment()
     party.add_member(character)
     
