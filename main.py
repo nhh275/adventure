@@ -35,9 +35,9 @@ def add_default_equipment_from_category(url, equipmentToAdd, numChoices):
 
 def get_equipment_options(optionSet):
     options = []
-    
+
     if 'options' not in optionSet['from'].keys():
-        # single equipment_category case (like the cleric's  holy symbol)
+        # single equipment_category case (like the cleric's holy symbol)
         if optionSet['from']['option_set_type'] == "equipment_category":
             url = optionSet['from']['equipment_category']['url']
             response = requests.get(f"https://www.dnd5eapi.co{url}")
@@ -51,7 +51,11 @@ def get_equipment_options(optionSet):
             if item['option_type'] == "counted_reference":
                 count = item['count']
                 name = item['of']['name']
-                display_name = f"{count} x {name}" if count > 1 else name
+                # show "a name" for single-count items, otherwise "N x Name"
+                if count == 1:
+                    display_name = f"a {name.lower()}"
+                else:
+                    display_name = f"{count} x {name}"
                 display_name = display_name[0].upper() + display_name[1:] if display_name else display_name
                 options.append((display_name, item))
             elif item['option_type'] == "choice":
@@ -59,17 +63,35 @@ def get_equipment_options(optionSet):
                 display_name = display_name[0].upper() + display_name[1:] if display_name else display_name
                 options.append((display_name, item))
             elif item['option_type'] == "multiple":
+                # Build display name from the items in the multiple. Use
+                # choice descriptions for nested choices and "a NAME" for single counted items.
                 item_descriptions = []
-                for sub_item in item['items']:
+                for sub_item in item.get('items', []):
                     if sub_item['option_type'] == "counted_reference":
-                        count = sub_item['count']
-                        name = sub_item['of']['name']
-                        item_desc = f"{count} x {name}" if count > 1 else name
-                        item_descriptions.append(item_desc)
-                display_name = " and ".join(item_descriptions)
+                        c = sub_item['count']
+                        n = sub_item['of']['name']
+                        if c == 1:
+                            item_descriptions.append(f"a {n.lower()}")
+                        else:
+                            item_descriptions.append(f"{c} x {n}")
+                    elif sub_item['option_type'] == "choice":
+                        # use the choice description (e.g. "a martial weapon")
+                        desc = sub_item['choice'].get('desc', '')
+                        item_descriptions.append(desc)
+                    elif sub_item['option_type'] == "multiple":
+                        # flatten one level of nested multiple if present
+                        nested_parts = []
+                        for nested in sub_item.get('items', []):
+                            if nested['option_type'] == 'counted_reference':
+                                nc = nested['count']
+                                nn = nested['of']['name']
+                                nested_parts.append(f"{nc} x {nn}" if nc > 1 else f"a {nn.lower()}")
+                        if nested_parts:
+                            item_descriptions.append(' and '.join(nested_parts))
+                display_name = ' and '.join(item_descriptions)
                 display_name = display_name[0].upper() + display_name[1:] if display_name else display_name
                 options.append((display_name, item))
-    
+
     return options
 
 def beginAdventure(party):
@@ -130,14 +152,22 @@ def roundabout(party):
     return
 
 def city(party):
-    print()
+    print("\nAs you amble on, the heights of the city loom in front of you. The usual sights can be seen - houses, shops, a grand cathedral - but what surprises you most "
+          "is the number of enormous car parks, both multi-level and sprawling across flat land. You consider what could possibly bring so many drivers to the city that "
+          "appears to you as so lacklustre and even dangerous, but your thoughts are interrupted by a noise completely unexpected in such an environment.")
+    input("> ")
+    print("\nYou flick your head round and are taken aback by what you see standing there: a human skeleton completely devoid of flesh! It appears to be the source of the "
+          "clanking sound, which emanates from its hollow body as it shifts in place. Looking down at it, its eyes turn red, piercing into your soul, and it charges you!")
+    input("> ")
+    
+    win = battles.skeleton(party)
     return
 
 
 # start of game / setup
 def main():
     print("\nWelcome to your grand adventure!")
-    print("What is your name, adventurer? ") # unsanitised 
+    print("What is your name, adventurer? ")
     name = input("> ").strip().title()
     if name == "":
         name = "Nameless One"
@@ -241,10 +271,47 @@ def main():
                         itemToAdd = chosenOption['of']
                         equipmentToAdd.append(itemToAdd)
                 elif chosenOption['option_type'] == "multiple": # multi-add
-                    for newItem in chosenOption['items']:
-                        for _ in range(newItem['count']):
-                            itemToAdd = newItem['of']
-                            equipmentToAdd.append(itemToAdd)
+                    for newItem in chosenOption.get('items', []):
+                        if newItem['option_type'] == 'counted_reference':
+                            for _ in range(newItem['count']):
+                                itemToAdd = newItem['of']
+                                equipmentToAdd.append(itemToAdd)
+                        elif newItem['option_type'] == 'choice':
+                            # prompt user to choose items from this category
+                            choice_info = newItem['choice']
+                            if choice_info['from']['option_set_type'] == 'equipment_category':
+                                choose_from_equipment_category(choice_info['from']['equipment_category']['url'], equipmentToAdd, choice_info['choose'])
+                            elif 'options' in choice_info['from']:
+                                # build options and prompt user for the nested choice
+                                nested_options = get_equipment_options({'from': choice_info['from']})
+                                for i, (dname, _) in enumerate(nested_options, 1):
+                                    print(f"{i}) {dname}")
+                                # assume choose 1 unless specified
+                                nested_choose = choice_info.get('choose', 1)
+                                for _ in range(nested_choose):
+                                    while True:
+                                        try:
+                                            nchoice = int(input("> ").strip())
+                                            if 1 <= nchoice <= len(nested_options):
+                                                break
+                                            else:
+                                                print(f"Please enter a number between 1 and {len(nested_options)}")
+                                        except ValueError:
+                                            print(f"Please enter a number between 1 and {len(nested_options)}")
+                                    sel = nested_options[nchoice-1][1]
+                                    if sel['option_type'] == 'counted_reference':
+                                        for _ in range(sel['count']):
+                                            equipmentToAdd.append(sel['of'])
+                                    elif sel['option_type'] == 'category_item':
+                                        equipmentToAdd.append(sel['of'])
+                                    elif sel['option_type'] == 'choice':
+                                        choose_from_equipment_category(sel['choice']['from']['equipment_category']['url'], equipmentToAdd, sel['choice']['choose'])
+                        elif newItem['option_type'] == 'multiple':
+                            # nested multiple - handle counted references inside
+                            for nested in newItem.get('items', []):
+                                if nested['option_type'] == 'counted_reference':
+                                    for _ in range(nested['count']):
+                                        equipmentToAdd.append(nested['of'])
                 elif chosenOption['option_type'] == "choice": # expand into a category to choose from
                     choose_from_equipment_category(chosenOption['choice']['from']['equipment_category']['url'], equipmentToAdd, chosenOption['choice']['choose'])
                 elif chosenOption['option_type'] == "category_item": # single item from equipment category

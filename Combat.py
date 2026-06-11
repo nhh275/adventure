@@ -6,7 +6,7 @@ import Character
 import Enemy
 
 class Combat:
-    def __init__(self, teamMembers, enemyMembers):
+    def __init__(self, teamMembers, enemyMembers): # lists of party members + enemies
         self.team = teamMembers
         self.enemies = enemyMembers
     
@@ -23,11 +23,11 @@ class Combat:
             size = max(len(self.enemies), len(self.team))
             for position, enemy, teamMember in zip_longest(range(1,size+1), self.enemies, self.team, fillvalue=''):
                 if teamMember == '' and enemy != '':
-                    print(f"{position}: {enemy.name} - {enemy.hp}HP")
+                    print(f"{position}) {enemy.name} - {enemy.hp}HP")
                 elif teamMember != '' and enemy == '':
                     print(f"                                    {teamMember.name} - {teamMember.hp}HP")
                 else:
-                    print(f"{position}: {enemy.name} - {enemy.hp}HP                   {teamMember.name} - {teamMember.hp}HP")
+                    print(f"{position}) {enemy.name} - {enemy.hp}HP                   {teamMember.name} - {teamMember.hp}HP")
         turn = 1
         while True: # combat loop
             print(f"\n                      Turn {turn}")
@@ -67,11 +67,11 @@ class Combat:
                     size = max(len(self.enemies), len(self.team))
                     for position, enemy, teamMember in zip_longest(range(1,size+1), self.enemies, self.team, fillvalue=''):
                         if teamMember == '' and enemy != '':
-                            print(f"{position}: {enemy.name} - {enemy.hp}HP")
+                            print(f"{position}) {enemy.name} - {enemy.hp}HP")
                         elif teamMember != '' and enemy == '':
                             print(f"                                    {teamMember.name} - {teamMember.hp}HP")
                         else:
-                            print(f"{position}: {enemy.name} - {enemy.hp}HP                   {teamMember.name} - {teamMember.hp}HP")
+                            print(f"{position}) {enemy.name} - {enemy.hp}HP                   {teamMember.name} - {teamMember.hp}HP")
 
                     print(f"\n{combatant.name}'s turn! Choose an enemy to attack (enter the number):")
                     
@@ -187,8 +187,7 @@ class Combat:
             bonus = math.floor((monsterData["dexterity"] - 10) / 2) # bonus to add or subtract
             return (d20 + bonus) # initiative value for the combat
         else:
-            # ability bonus TBD for characters
-            return d20
+            return (d20 + combatant.get_bonus(combatant.dexterity))
 
     
     def make_result(self, win):
