@@ -16,7 +16,8 @@ class Character(Being):
         self.intelligence = i
         self.wisdom = w
         self.charisma = ch
-        self.set_speed()     
+        self.set_speed()
+        self.set_weapon_list()
         self.set_weapon()
         self.set_AC()
     
@@ -39,25 +40,49 @@ class Character(Being):
             print(f" x{dupeCount}")
         else:
             print()
+    
+    def choose_weapon(self):
+        for i,item in enumerate(self.weapons):
+            print(f"{i+1}) {item['name']} - {item['damage']['damage_dice']}")
+        while True:
+            try:
+                choice = int(input("> ").strip())
+                if 1 <= choice <= len(self.weapons):
+                    self.set_weapon(self.weapons[choice-1])
+                    break
+                else:
+                    print(f"Please enter a number between 1 and {len(self.weapons)}")
+            except ValueError:
+                print(f"Please enter a number between 1 and {len(self.weapons)}")
         
-    def set_weapon(self, weaponToEquip=None):
+        
+    def set_weapon_list(self):
+        self.weapons = []
+        for item in self.equipment:
+            url = f"https://www.dnd5eapi.co/api/2014/equipment/{item['index']}"
+            response = requests.get(url)
+            itemData = response.json()
+            self.add_weapon_to_list(itemData)
+
+    
+    def set_weapon(self, weaponToEquip=None): # return True if a weapon is equipped, False otherwise
         if weaponToEquip is None:
             self.weapon = None
-            for item in self.equipment:
-                url = f"https://www.dnd5eapi.co/api/2014/equipment/{item['index']}"
-                response = requests.get(url)
-                itemData = response.json()
-                if 'damage' in itemData: # check if the equipment has a damage attribute (it can be used as a weapon)
-                    self.weapon = itemData
-                    return True # just use the first weapon
+            self.weapon = random.choice(self.weapons) # pick random weapon from inventory
+            return True
         else: # weapon passed in to equip
-            if 'damage' in weaponToEquip: # check if the equipment has a damage attribute (it can be used as a weapon)
+            if "damage" in weaponToEquip: # equip this - do not add it to the list, new weapons will run add_weapon_to_list directly
                 self.weapon = weaponToEquip
                 return True
-            else:
-                print("That is not a valid weapon.")
-                return False
+        return False
     
+    def add_weapon_to_list(self, weaponToAdd):
+        if 'damage' in weaponToAdd: # check if the equipment has a damage attribute (it can be used as a weapon)
+            self.weapons.append(weaponToAdd)
+            return True
+        else:
+            return False
+        
     def set_AC(self):
         armour = 10
         usingArmour = False

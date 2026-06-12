@@ -73,7 +73,9 @@ class Combat:
                         else:
                             print(f"{position}) {enemy.name} - {enemy.hp}HP                   {teamMember.name} - {teamMember.hp}HP")
 
-                    print(f"\n{combatant.name}'s turn! Choose an enemy to attack (enter the number):")
+                    print(f"\n{combatant.name}, which weapon do you want to use this turn?")
+                    combatant.choose_weapon()
+                    print(f"Choose an enemy to attack (enter the number):")
                     
                     while True:
                         choice = 0

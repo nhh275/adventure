@@ -373,7 +373,6 @@ def create_character(party, classData, raceData, name, equipmentToAdd=None):
     print(f"\n{name} has the following equipment:")
     character.show_equipment()
     party.add_member(character)
-    
-    
+        
 if __name__ == "__main__":
     main()
