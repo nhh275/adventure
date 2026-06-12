@@ -95,13 +95,11 @@ class Combat:
                     elif not hit_result[0] and hit_result[1] != 1: # non-critical miss, display this message instead of crit miss message
                         print(f"\n{combatant.name} missed their attack on {target.name}.")
             turn += 1
-                    
+            # at end of turn, check if either team is fully dead
             if not self.team:
-                print("Your party has been defeated! Game over.")
-                return False
+                return self.make_result(False)
             elif not self.enemies:
-                print("You have defeated all enemies! Victory!")
-                return True
+                return self.make_result(True)
     
     def calculate_hit(self, combatant, enemy): # combatant rolling the hit
         d20 = random.randint(1,20)
@@ -166,6 +164,7 @@ class Combat:
                 dmg += bonus
                 dmg = max(1, dmg)
         else: # unarmed, weapon == None
+            desiredStat = "strength"
             bonusDmg = 0 # no str bonus by default
             if isinstance(combatant, Character.Character):
                 bonusDmg = combatant.get_bonus(combatant.strength)

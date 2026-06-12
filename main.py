@@ -51,11 +51,11 @@ def get_equipment_options(optionSet):
             if item['option_type'] == "counted_reference":
                 count = item['count']
                 name = item['of']['name']
-                # show "a name" for single-count items, otherwise "N x Name"
+                # show "a name" for single-count items, otherwise number of items x name
                 if count == 1:
                     display_name = f"a {name.lower()}"
                 else:
-                    display_name = f"{count} x {name}"
+                    display_name = f"{name} x {count}"
                 display_name = display_name[0].upper() + display_name[1:] if display_name else display_name
                 options.append((display_name, item))
             elif item['option_type'] == "choice":
@@ -63,8 +63,7 @@ def get_equipment_options(optionSet):
                 display_name = display_name[0].upper() + display_name[1:] if display_name else display_name
                 options.append((display_name, item))
             elif item['option_type'] == "multiple":
-                # Build display name from the items in the multiple. Use
-                # choice descriptions for nested choices and "a NAME" for single counted items.
+                # output the display name from the items in the multiple list - use choice descriptions for nested choices and "a NAME" for single counted items.
                 item_descriptions = []
                 for sub_item in item.get('items', []):
                     if sub_item['option_type'] == "counted_reference":
@@ -75,11 +74,9 @@ def get_equipment_options(optionSet):
                         else:
                             item_descriptions.append(f"{c} x {n}")
                     elif sub_item['option_type'] == "choice":
-                        # use the choice description (e.g. "a martial weapon")
                         desc = sub_item['choice'].get('desc', '')
                         item_descriptions.append(desc)
                     elif sub_item['option_type'] == "multiple":
-                        # flatten one level of nested multiple if present
                         nested_parts = []
                         for nested in sub_item.get('items', []):
                             if nested['option_type'] == 'counted_reference':
@@ -248,8 +245,7 @@ def main():
             numChoices = optionSet['choose']
             print(f"\nChoose {numChoices} from the following:")
             
-            # Get available options
-            availableOptions = get_equipment_options(optionSet)
+            availableOptions = get_equipment_options(optionSet) # get the available options...
             for i, (displayName, _) in enumerate(availableOptions, 1):
                 print(f"{i}) {displayName}")
             
@@ -270,17 +266,22 @@ def main():
                     for _ in range(chosenOption['count']):
                         itemToAdd = chosenOption['of']
                         equipmentToAdd.append(itemToAdd)
+            
                 elif chosenOption['option_type'] == "multiple": # multi-add
                     for newItem in chosenOption.get('items', []):
+                        
                         if newItem['option_type'] == 'counted_reference':
                             for _ in range(newItem['count']):
                                 itemToAdd = newItem['of']
                                 equipmentToAdd.append(itemToAdd)
+                        
                         elif newItem['option_type'] == 'choice':
                             # prompt user to choose items from this category
                             choice_info = newItem['choice']
+                            
                             if choice_info['from']['option_set_type'] == 'equipment_category':
                                 choose_from_equipment_category(choice_info['from']['equipment_category']['url'], equipmentToAdd, choice_info['choose'])
+                            
                             elif 'options' in choice_info['from']:
                                 # build options and prompt user for the nested choice
                                 nested_options = get_equipment_options({'from': choice_info['from']})
@@ -292,13 +293,16 @@ def main():
                                     while True:
                                         try:
                                             nchoice = int(input("> ").strip())
+                                            
                                             if 1 <= nchoice <= len(nested_options):
                                                 break
+                                            
                                             else:
                                                 print(f"Please enter a number between 1 and {len(nested_options)}")
                                         except ValueError:
                                             print(f"Please enter a number between 1 and {len(nested_options)}")
                                     sel = nested_options[nchoice-1][1]
+                                    
                                     if sel['option_type'] == 'counted_reference':
                                         for _ in range(sel['count']):
                                             equipmentToAdd.append(sel['of'])
@@ -306,12 +310,14 @@ def main():
                                         equipmentToAdd.append(sel['of'])
                                     elif sel['option_type'] == 'choice':
                                         choose_from_equipment_category(sel['choice']['from']['equipment_category']['url'], equipmentToAdd, sel['choice']['choose'])
+                        
                         elif newItem['option_type'] == 'multiple':
                             # nested multiple - handle counted references inside
                             for nested in newItem.get('items', []):
                                 if nested['option_type'] == 'counted_reference':
                                     for _ in range(nested['count']):
                                         equipmentToAdd.append(nested['of'])
+                    
                 elif chosenOption['option_type'] == "choice": # expand into a category to choose from
                     choose_from_equipment_category(chosenOption['choice']['from']['equipment_category']['url'], equipmentToAdd, chosenOption['choice']['choose'])
                 elif chosenOption['option_type'] == "category_item": # single item from equipment category
