@@ -145,8 +145,46 @@ def roundabout(party):
     create_character(party, classData, raceData, "Terry")
     
     # time to scrap 
-    win = battles.goblins(party)
-    return
+    if not battles.goblins(party): # lost fight, end
+        return
+
+    print(
+        "\nFollowing your great victory, you pause in the traffic created by the commotion to rest and heal your wounds. "
+        "Others around you seem to be relatively unfazed by what you've been through, as if this is just a regular occurrence in Swindon, and the car in front eventually drives off to "
+        "the Roundabout anyways. Feeling a little shaken but rested, you decide to continue on, and pray that you are unbothered for the rest of your trip."
+    )
+    input("> ")
+    print(
+        "\nYou navigate Terry through the Magic Roundabout. He can't tell that you don't really know what you're doing, though you've always been a good actor. "
+        "The roads are perilous, with other drivers clearly distressed as they attempt to survive the beast that calls Swindon home, but in the end you come out of it alive. "
+        "The two of you are now faced with the main street into the city centre, and Terry thanks you graciously for your help."
+    )
+    input("> ")
+    print(
+        "\nHe asks you if you have any plans for the day, and when you reply with a 'no', he offers to spend some time with you in the city, suggesting various places to go. "
+        "You feel quite comfortable with Terry by now, so you agree and think about what you would like to do today."
+    )
+    input("> ")
+    
+    print("\nWhere would you like to go?\n1) Supermarket\n2) Cathedral\n3) Park")
+    choice = 0
+    while True:
+        try:
+            choice = int(input("> ").strip())
+            if choice <= 3 and choice > 0: # check both conditions here
+                break
+            else:
+                print("Invalid choice. Please select a new location with the numbers on the left.\n") # input is int but invalid
+        except:
+            print("Invalid choice. Please select a new location with the numbers on the left.\n") # input is not int
+    
+    match choice:
+        case 1:
+            supermarket(party)
+        case 2:
+            cathedral(party)
+        case 3:
+            park(party)
 
 def city(party):
     print("\nAs you amble on, the heights of the city loom in front of you. The usual sights can be seen - houses, shops, a grand cathedral - but what surprises you most "
@@ -157,8 +195,49 @@ def city(party):
           "clanking sound, which emanates from its hollow body as it shifts in place. Looking down at it, its eyes turn red, piercing into your soul, and it charges you!")
     input("> ")
     
-    win = battles.skeleton(party)
-    return
+    if not battles.skeleton(party):
+        return
+
+    print(
+        "\nFollowing your great victory, you pause by the roadside to rest and heal your wounds. "
+        "Others in the area seem to be relatively unfazed by what you've been through, as if this is just a regular occurrence in Swindon, as they continue with their days. "
+        "Feeling a little shaken but rested, you decide to continue on, and pray that you are unbothered for the rest of your trip."
+    )
+    input("> ")
+    print(
+        "\nYou follow the path down to the city, and end up facing the main street into the centre of town. "
+        "Now that you're past all that trouble, you ponder what you really came to Swindon today for."
+    )
+    input("> ")
+    
+    print("\nWhere would you like to go?\n1) Supermarket\n2) Cathedral\n3) Park")
+    choice = 0
+    while True:
+        try:
+            choice = int(input("> ").strip())
+            if choice <= 3 and choice > 0: # check both conditions here
+                break
+            else:
+                print("Invalid choice. Please select a new location with the numbers on the left.\n") # input is int but invalid
+        except:
+            print("Invalid choice. Please select a new location with the numbers on the left.\n") # input is not int
+    
+    match choice:
+        case 1:
+            supermarket(party)
+        case 2:
+            cathedral(party)
+        case 3:
+            park(party)
+
+def supermarket(party):
+    pass
+
+def cathedral(party):
+    pass
+
+def park(party):
+    pass
 
 
 # start of game / setup
@@ -369,7 +448,7 @@ def create_character(party, classData, raceData, name, equipmentToAdd=None):
 
     hp = classData['hit_die'] + math.floor((scores[2]-10)/2) # generate hp from constitution modifier and class hit die
     character = Character(name, classData, raceData, equipmentToAdd, proficienciesToAdd, scores[0], scores[1], scores[2], scores[3], 
-                          scores[4], scores[5], math.floor(hp*1.5)) # +50% hp to be more generous
+                          scores[4], scores[5], max(10,math.floor(hp*1.5))) # +50% hp to be more generous, lowest is 10hp
     print(f"\n{name} has the following equipment:")
     character.show_equipment()
     party.add_member(character)

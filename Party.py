@@ -14,3 +14,8 @@ class Party:
             if member.name == name:
                 return member
         return None
+    
+    def heal_party(self):
+        for member in self.members:
+            member.hp = member.maxHP # reset to full health, typically after combat win
+            member.alive = True

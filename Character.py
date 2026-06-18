@@ -16,6 +16,7 @@ class Character(Being):
         self.intelligence = i
         self.wisdom = w
         self.charisma = ch
+        self.maxHP = hp
         self.set_speed()
         self.set_weapon_list()
         self.set_weapon()

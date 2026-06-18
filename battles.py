@@ -6,7 +6,7 @@ def goblins(party):
     url = "https://www.dnd5eapi.co/api/2014/monsters/goblin"
     response = requests.get(url)
     goblinData = response.json() 
-    numGoblins = random.randint(2, 3) # inclusive both ways
+    numGoblins = random.randint(2, 3) # inclusive both ways, gen a random number of goblins
     goblins = [] # Enemy list
     for i in range(numGoblins):
         goblins.append(Enemy(f"Goblin {i+1}", goblinData, goblinData['hit_points']))
