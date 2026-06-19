@@ -1,6 +1,7 @@
 import random
 import requests
 from Being import Being
+from console_utils import cprint as print
 
 
 class Character(Being):
@@ -29,22 +30,22 @@ class Character(Being):
             if item != prevItem:
                 if prevItem != "":
                     if dupeCount > 1:
-                        print(f" x{dupeCount}")
+                        print(f" x{dupeCount}", style="yellow")
                     else:
                         print()
-                print(f"{item['name']}", end='')
+                print(f"{item['name']}", style="bold", end='')
                 dupeCount = 1
             else:
                 dupeCount += 1
             prevItem = item
         if dupeCount > 1:
-            print(f" x{dupeCount}")
+            print(f" x{dupeCount}", style="yellow")
         else:
             print()
     
     def choose_weapon(self):
         for i,item in enumerate(self.weapons):
-            print(f"{i+1}) {item['name']} - {item['damage']['damage_dice']}")
+            print(f"{i+1}) {item['name']} - {item['damage']['damage_dice']}", style="green")
         while True:
             try:
                 choice = int(input("> ").strip())
@@ -52,9 +53,9 @@ class Character(Being):
                     self.set_weapon(self.weapons[choice-1])
                     break
                 else:
-                    print(f"Please enter a number between 1 and {len(self.weapons)}")
+                    print(f"Please enter a number between 1 and {len(self.weapons)}", style="bold red")
             except ValueError:
-                print(f"Please enter a number between 1 and {len(self.weapons)}")
+                print(f"Please enter a number between 1 and {len(self.weapons)}", style="bold red")
         
         
     def set_weapon_list(self):

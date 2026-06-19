@@ -4,14 +4,14 @@ import requests, pprint
 from Party import Party
 from Character import Character
 import battles
-
+from console_utils import cprint as print
 
 def choose_from_equipment_category(url, equipmentToAdd, numChoices=1):
     response = requests.get(f"https://www.dnd5eapi.co{url}")
     listData = response.json() # json of equipment choice data
-    print(f"Choose {numChoices} to add from the following list:")
+    print(f"Choose {numChoices} to add from the following list:", style="bold yellow")
     for i in range(len(listData['equipment'])):
-        print(f"{i+1}) {listData['equipment'][i]['name']}")
+        print(f"{i+1}) {listData['equipment'][i]['name']}", style="green")
 
     for _ in range(numChoices):
         while True:
@@ -22,9 +22,9 @@ def choose_from_equipment_category(url, equipmentToAdd, numChoices=1):
                     equipmentToAdd.append(itemToAdd)
                     break
                 else:
-                    print(f"Please enter a number between 1 and {len(listData['equipment'])}")
+                    print(f"Please enter a number between 1 and {len(listData['equipment'])}", style="bold red")
             except ValueError:
-                print(f"Please enter a number between 1 and {len(listData['equipment'])}")
+                print(f"Please enter a number between 1 and {len(listData['equipment'])}", style="bold red")
 
 def add_default_equipment_from_category(url, equipmentToAdd, numChoices):
     response = requests.get(f"https://www.dnd5eapi.co{url}")
@@ -95,27 +95,30 @@ def beginAdventure(party):
     print(
         "\nYour adventure begins in the magical city of Swindon, where you find yourself on the side of a road sparsely populated by vehicles. "
         "It is a calm day, with the regular clouds scattered across the sky and no sun to be seen, as is typical for this land. "
-        "Your ponderance is interrupted by the sound of a car drawing near, its engine rumbling as it slows its approach."
+        "Your ponderance is interrupted by the sound of a car drawing near, its engine rumbling as it slows its approach.",
+        style="cyan"
     )
     input("> ")
     print(
         "\nFrom within the vehicle and through a crack in the window shouts a voice, 'Excuse me! Do you live here? I need some help navigating this area - "
         "do you understand the Magic Roundabout?' The window is rolled down further to reveal a man of staggering size - a height that makes you wonder how "
-        "such an individual could even fit in a Hyundai i10, let alone drive it comfortably."
+        "such an individual could even fit in a Hyundai i10, let alone drive it comfortably.",
+        style="cyan"
     )
     input("> ")
-    print("\nPutting your bewilderment aside, you must say something in response. Do you help? (yes/no)")
+    print("\nPutting your bewilderment aside, you must say something in response. Do you help? (yes/no)", style="bold cyan")
     choice = input("> ").strip().lower()
     if choice == "yes" or choice == "y":
         print(
             "\nYou offer to help the man and he slows the vehicle to a stop beside you on the double yellow lines, flashing his emergency lights. "
             "You attempt to explain the wonder of the Roundabout, but its mystery is too complex, and he ends up inviting you into the passenger seat for a "
-            "more direct guide. You are tentative to accept, but remember that you've been trying to work on your bravery lately, so you hop in and buckle up."
+            "more direct guide. You are tentative to accept, but remember that you've been trying to work on your bravery lately, so you hop in and buckle up.",
+            style="cyan"
         )
         input("> ")
         roundabout(party)
     else:
-        print("\nYou shrug, mumbling something about just visiting, and leave the way hulking unit in disappointment, continuing on your path into the city.")
+        print("\nYou shrug, mumbling something about just visiting, and leave the way hulking unit in disappointment, continuing on your path into the city.", style="cyan")
         input("> ")
         city(party)
     return
@@ -125,13 +128,15 @@ def roundabout(party):
         "\nWhen you enter, the man introduces himself as Terry and explains that he's been stuck here for hours, desperate for some help. "
         "On closer inspection, you see reptilian scales on his neck and hands - this is no regular human, but you feel safe nonetheless. "
         "You drive in relative peace until you see the great sign for the Magic Roundabout up ahead. "
-        "As you approach, you sense Terry's nerves rising, sweat dripping down his face as he prepares to challenge the Roundabout with you by his side."
+        "As you approach, you sense Terry's nerves rising, sweat dripping down his face as he prepares to challenge the Roundabout with you by his side.",
+        style="cyan"
     )
     input("> ")
     print(
         "\nYou are about to enter the start of the Roundabout, when all of a sudden, the boot of the following car flies open, giving way to a collection of "
         "what you can only assume to be goblins from some sort of fantasy world. The creatures leap out and mob the Hyundai, before any evasive maneouvres "
-        "can be taken. The only option is to fight, so you steel yourself and tell Terry 'I hope you've fought before, this won't be fun.'"
+        "can be taken. The only option is to fight, so you steel yourself and tell Terry 'I hope you've fought before, this won't be fun.'",
+        style="cyan"
     )
     input("> ")
     # make Terry
@@ -151,22 +156,25 @@ def roundabout(party):
     print(
         "\nFollowing your great victory, you pause in the traffic created by the commotion to rest and heal your wounds. "
         "Others around you seem to be relatively unfazed by what you've been through, as if this is just a regular occurrence in Swindon, and the car in front eventually drives off to "
-        "the Roundabout anyways. Feeling a little shaken but rested, you decide to continue on, and pray that you are unbothered for the rest of your trip."
+        "the Roundabout anyways. Feeling a little shaken but rested, you decide to continue on, and pray that you are unbothered for the rest of your trip.",
+        style="cyan"
     )
     input("> ")
     print(
         "\nYou navigate Terry through the Magic Roundabout. He can't tell that you don't really know what you're doing, though you've always been a good actor. "
         "The roads are perilous, with other drivers clearly distressed as they attempt to survive the beast that calls Swindon home, but in the end you come out of it alive. "
-        "The two of you are now faced with the main street into the city centre, and Terry thanks you graciously for your help."
+        "The two of you are now faced with the main street into the city centre, and Terry thanks you graciously for your help.",
+        style="cyan"
     )
     input("> ")
     print(
         "\nHe asks you if you have any plans for the day, and when you reply with a 'no', he offers to spend some time with you in the city, suggesting various places to go. "
-        "You feel quite comfortable with Terry by now, so you agree and think about what you would like to do today."
+        "You feel quite comfortable with Terry by now, so you agree and think about what you would like to do today.",
+        style="cyan"
     )
     input("> ")
     
-    print("\nWhere would you like to go?\n1) Supermarket\n2) Cathedral\n3) Park")
+    print("\nWhere would you like to go?\n1) Supermarket\n2) Cathedral\n3) Park", style="bold yellow")
     choice = 0
     while True:
         try:
@@ -174,9 +182,9 @@ def roundabout(party):
             if choice <= 3 and choice > 0: # check both conditions here
                 break
             else:
-                print("Invalid choice. Please select a new location with the numbers on the left.\n") # input is int but invalid
+                print("Invalid choice. Please select a new location with the numbers on the left.\n", style="bold red") # input is int but invalid
         except:
-            print("Invalid choice. Please select a new location with the numbers on the left.\n") # input is not int
+            print("Invalid choice. Please select a new location with the numbers on the left.\n", style="bold red") # input is not int
     
     match choice:
         case 1:
@@ -189,10 +197,10 @@ def roundabout(party):
 def city(party):
     print("\nAs you amble on, the heights of the city loom in front of you. The usual sights can be seen - houses, shops, a grand cathedral - but what surprises you most "
           "is the number of enormous car parks, both multi-level and sprawling across flat land. You consider what could possibly bring so many drivers to the city that "
-          "appears to you as so lacklustre and even dangerous, but your thoughts are interrupted by a noise completely unexpected in such an environment.")
+          "appears to you as so lacklustre and even dangerous, but your thoughts are interrupted by a noise completely unexpected in such an environment.", style="cyan")
     input("> ")
     print("\nYou flick your head round and are taken aback by what you see standing there: a human skeleton completely devoid of flesh! It appears to be the source of the "
-          "clanking sound, which emanates from its hollow body as it shifts in place. Looking down at it, its eyes turn red, piercing into your soul, and it charges you!")
+          "clanking sound, which emanates from its hollow body as it shifts in place. Looking down at it, its eyes turn red, piercing into your soul, and it charges you!", style="cyan")
     input("> ")
     
     if not battles.skeleton(party):
@@ -201,16 +209,17 @@ def city(party):
     print(
         "\nFollowing your great victory, you pause by the roadside to rest and heal your wounds. "
         "Others in the area seem to be relatively unfazed by what you've been through, as if this is just a regular occurrence in Swindon, as they continue with their days. "
-        "Feeling a little shaken but rested, you decide to continue on, and pray that you are unbothered for the rest of your trip."
+        "Feeling a little shaken but rested, you decide to continue on, and pray that you are unbothered for the rest of your trip.",
+        style="cyan"
     )
     input("> ")
     print(
         "\nYou follow the path down to the city, and end up facing the main street into the centre of town. "
         "Now that you're past all that trouble, you ponder what you really came to Swindon today for."
-    )
+    , style="cyan")
     input("> ")
     
-    print("\nWhere would you like to go?\n1) Supermarket\n2) Cathedral\n3) Park")
+    print("\nWhere would you like to go?\n1) Supermarket\n2) Cathedral\n3) Park", style="bold yellow")
     choice = 0
     while True:
         try:
@@ -218,9 +227,9 @@ def city(party):
             if choice <= 3 and choice > 0: # check both conditions here
                 break
             else:
-                print("Invalid choice. Please select a new location with the numbers on the left.\n") # input is int but invalid
+                print("Invalid choice. Please select a new location with the numbers on the left.\n", style="bold red") # input is int but invalid
         except:
-            print("Invalid choice. Please select a new location with the numbers on the left.\n") # input is not int
+            print("Invalid choice. Please select a new location with the numbers on the left.\n", style="bold red") # input is not int
     
     match choice:
         case 1:
@@ -242,7 +251,7 @@ def park(party):
 
 # start of game / setup
 def main():
-    print("\nWelcome to your grand adventure!")
+    print("\nWelcome to your grand adventure!", style="bold green")
     print("What is your name, adventurer? ")
     name = input("> ").strip().title()
     if name == "":
@@ -252,7 +261,7 @@ def main():
     response = requests.get(url)
     data = response.json()
     for i in range(data['count']):
-        print(data['results'][i]['name'])
+        print(data['results'][i]['name'], style="magenta")
 
     print("\nWhich class takes your fancy today? ")
     while True:
@@ -260,7 +269,7 @@ def main():
         if choice in [data['results'][i]['index'] for i in range(data['count'])]:
             break
         else:
-            print("Invalid choice. Please select a class from the list.\n")
+            print("Invalid choice. Please select a class from the list.\n", style="bold red")
     url = f"https://www.dnd5eapi.co/api/2014/classes/{choice}"
     response = requests.get(url)
     classData = response.json()
@@ -270,7 +279,7 @@ def main():
     response = requests.get(url)
     data = response.json()
     for i in range(data['count']):
-        print(data['results'][i]['name'])
+        print(data['results'][i]['name'], style="magenta")
         
     print("\nWhich race are you? ")
     while True:
@@ -278,12 +287,12 @@ def main():
         if choice in [data['results'][i]['index'] for i in range(data['count'])]:
             break
         else:
-            print("Invalid choice. Please select a race from the list.\n")
+            print("Invalid choice. Please select a race from the list.\n", style="bold red")
     url = f"https://www.dnd5eapi.co/api/2014/races/{choice}"
     response = requests.get(url)
     raceData = response.json()
 
-    print(f"\n{name} the mighty {raceData['name']} {classData['name']}! A wonderful choice.")
+    print(f"\n{name} the mighty {raceData['name']} {classData['name']}! A wonderful choice.", style="bold green")
     print("\nYou have the following proficiencies and ability bonuses:")
 
     for i in range(len(classData['proficiencies'])):
@@ -301,33 +310,33 @@ def main():
     
     if 'starting_equipment_options' in classData:
         for optionSet in classData['starting_equipment_options']:
-            print("\nYour current equipment is as follows:") # to give more info to player about what to choose
+            print("\nYour current equipment is as follows:")
             prevItem = ""
             dupeCount = 1
             for item in equipmentToAdd:
                 if item != prevItem:
                     if prevItem != "":
                         if dupeCount > 1:
-                            print(f" x{dupeCount}")
+                            print(f" x{dupeCount}", style="yellow")
                         else:
                             print()
-                    print(f"{item['name']}", end='')
+                    print(f"{item['name']}", style="bold", end='')
                     dupeCount = 1
                 else:
                     dupeCount += 1
                 prevItem = item
             if dupeCount > 1:
-                print(f" x{dupeCount}")
+                print(f" x{dupeCount}", style="yellow")
             else:
                 print()
-            
+
             numChoices = optionSet['choose']
-            print(f"\nChoose {numChoices} from the following:")
-            
-            availableOptions = get_equipment_options(optionSet) # get the available options...
+            print(f"\nChoose {numChoices} from the following:", style="bold yellow")
+
+            availableOptions = get_equipment_options(optionSet)
             for i, (displayName, _) in enumerate(availableOptions, 1):
                 print(f"{i}) {displayName}")
-            
+
             for _ in range(numChoices):
                 while True:
                     try:
@@ -335,53 +344,48 @@ def main():
                         if 1 <= choice <= len(availableOptions):
                             break
                         else:
-                            print(f"Please enter a number between 1 and {len(availableOptions)}")
+                            print(f"Please enter a number between 1 and {len(availableOptions)}", style="bold red")
                     except ValueError:
-                        print(f"Please enter a number between 1 and {len(availableOptions)}")
-                
+                        print(f"Please enter a number between 1 and {len(availableOptions)}", style="bold red")
+
                 chosenOption = availableOptions[choice - 1][1]
-                
-                if chosenOption['option_type'] == "counted_reference": # simple, add X of this item
+
+                if chosenOption['option_type'] == "counted_reference":
                     for _ in range(chosenOption['count']):
                         itemToAdd = chosenOption['of']
                         equipmentToAdd.append(itemToAdd)
-            
-                elif chosenOption['option_type'] == "multiple": # multi-add
+
+                elif chosenOption['option_type'] == "multiple":
                     for newItem in chosenOption.get('items', []):
-                        
+
                         if newItem['option_type'] == 'counted_reference':
                             for _ in range(newItem['count']):
                                 itemToAdd = newItem['of']
                                 equipmentToAdd.append(itemToAdd)
-                        
+
                         elif newItem['option_type'] == 'choice':
-                            # prompt user to choose items from this category
                             choice_info = newItem['choice']
-                            
+
                             if choice_info['from']['option_set_type'] == 'equipment_category':
                                 choose_from_equipment_category(choice_info['from']['equipment_category']['url'], equipmentToAdd, choice_info['choose'])
-                            
+
                             elif 'options' in choice_info['from']:
-                                # build options and prompt user for the nested choice
                                 nested_options = get_equipment_options({'from': choice_info['from']})
                                 for i, (dname, _) in enumerate(nested_options, 1):
                                     print(f"{i}) {dname}")
-                                # assume choose 1 unless specified
                                 nested_choose = choice_info.get('choose', 1)
                                 for _ in range(nested_choose):
                                     while True:
                                         try:
                                             nchoice = int(input("> ").strip())
-                                            
                                             if 1 <= nchoice <= len(nested_options):
                                                 break
-                                            
                                             else:
-                                                print(f"Please enter a number between 1 and {len(nested_options)}")
+                                                print(f"Please enter a number between 1 and {len(nested_options)}", style="bold red")
                                         except ValueError:
-                                            print(f"Please enter a number between 1 and {len(nested_options)}")
+                                            print(f"Please enter a number between 1 and {len(nested_options)}", style="bold red")
                                     sel = nested_options[nchoice-1][1]
-                                    
+
                                     if sel['option_type'] == 'counted_reference':
                                         for _ in range(sel['count']):
                                             equipmentToAdd.append(sel['of'])
@@ -389,17 +393,16 @@ def main():
                                         equipmentToAdd.append(sel['of'])
                                     elif sel['option_type'] == 'choice':
                                         choose_from_equipment_category(sel['choice']['from']['equipment_category']['url'], equipmentToAdd, sel['choice']['choose'])
-                        
+
                         elif newItem['option_type'] == 'multiple':
-                            # nested multiple - handle counted references inside
                             for nested in newItem.get('items', []):
                                 if nested['option_type'] == 'counted_reference':
                                     for _ in range(nested['count']):
                                         equipmentToAdd.append(nested['of'])
-                    
-                elif chosenOption['option_type'] == "choice": # expand into a category to choose from
+
+                elif chosenOption['option_type'] == "choice":
                     choose_from_equipment_category(chosenOption['choice']['from']['equipment_category']['url'], equipmentToAdd, chosenOption['choice']['choose'])
-                elif chosenOption['option_type'] == "category_item": # single item from equipment category
+                elif chosenOption['option_type'] == "category_item":
                     equipmentToAdd.append(chosenOption['of'])
                 
     
@@ -407,7 +410,7 @@ def main():
     create_character(party, classData, raceData, name, equipmentToAdd) # create player character
     # setup done 
     
-    print("\nYour character is ready! The adventure is about to unfold...\n\n")
+    print("\nYour character is ready! The adventure is about to unfold...\n\n", style="bold green")
     beginAdventure(party)
     return
 

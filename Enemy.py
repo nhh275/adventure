@@ -52,7 +52,7 @@ class Enemy(Being):
         
     def set_AC(self):
         armour = self.enemyData['armor_class'][0]['value'] # armour AC, accounts for shield and bonus already
-        self.AC = math.floor((armour + min(2,self.get_bonus(self.enemyData['dexterity']))) * 0.6)
+        self.AC = math.floor((armour + min(2,self.get_bonus(self.enemyData['dexterity']))) * 0.6) # weakens enemy AC to be generous
         
     def set_speed(self):
         self.speed = int(self.enemyData['speed']['walk'].split(' ')[0]) # get the int

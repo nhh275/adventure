@@ -2,6 +2,8 @@ import pprint
 import random, requests
 from Enemy import Enemy
 from Combat import Combat
+from console_utils import cprint as print
+
 def goblins(party):
     url = "https://www.dnd5eapi.co/api/2014/monsters/goblin"
     response = requests.get(url)
@@ -10,7 +12,7 @@ def goblins(party):
     goblins = [] # Enemy list
     for i in range(numGoblins):
         goblins.append(Enemy(f"Goblin {i+1}", goblinData, goblinData['hit_points']))
-    print(f"\nYou encounter {numGoblins} goblins!")
+    print(f"\nYou encounter {numGoblins} goblins!", style="bold red")
     
     # undergo combat
     combat = Combat(party.members, goblins)
@@ -24,7 +26,7 @@ def skeleton(party):
     enemyData = response.json() 
     skeletonList = [Enemy(f"Skeleton", enemyData, enemyData['hit_points'])] # Enemy list (1 skelly)
 
-    print(f"\nYou encounter a skeleton!")
+    print(f"\nYou encounter a skeleton!", style="bold red")
     
     # undergo combat
     combat = Combat(party.members, skeletonList)

@@ -4,6 +4,7 @@ from itertools import zip_longest
 import requests
 import Character
 import Enemy
+from console_utils import cprint as print
 
 class Combat:
     def __init__(self, teamMembers, enemyMembers): # lists of party members + enemies
@@ -14,32 +15,32 @@ class Combat:
         combatants = self.team + self.enemies # concat two lists
         combatants.sort(key=lambda x: self.calculate_initiative(x), reverse=True) # sort by speed, highest first, to get turn order
         currentCombatantCount = len(combatants)
-        print("\nTurn order:")
+        print("\nTurn order:", style="bold cyan")
         for unit in combatants:
-            print(unit.name)
+            print(unit.name, style="green")
         time.sleep(1)
         if not isinstance(combatants[0], Character.Character): # display combatants before enemies attack
-            print("\nCombat report:")
+            print("\nCombat report:", style="bold cyan")
             size = max(len(self.enemies), len(self.team))
             for position, enemy, teamMember in zip_longest(range(1,size+1), self.enemies, self.team, fillvalue=''):
                 if teamMember == '' and enemy != '':
-                    print(f"{position}) {enemy.name} - {enemy.hp}HP")
+                    print(f"{position}) {enemy.name} - {enemy.hp}HP", style="yellow")
                 elif teamMember != '' and enemy == '':
-                    print(f"                                    {teamMember.name} - {teamMember.hp}HP")
+                    print(f"                                    {teamMember.name} - {teamMember.hp}HP", style="green")
                 else:
-                    print(f"{position}) {enemy.name} - {enemy.hp}HP                   {teamMember.name} - {teamMember.hp}HP")
+                    print(f"{position}) {enemy.name} - {enemy.hp}HP                   {teamMember.name} - {teamMember.hp}HP", style="yellow")
         turn = 1
         while True: # combat loop
-            print(f"\n                      Turn {turn}")
+            print(f"\n                      Turn {turn}", style="bold cyan")
             new_combatants = [] # each turn, update combatants list if any died
             for i in range(len(combatants)):
                 if combatants[i].alive:
                     new_combatants.append(combatants[i])
             for combatant in combatants:
                 if len(combatants) != currentCombatantCount:
-                    print("\nUpdated turn order:")
+                    print("\nUpdated turn order:", style="cyan")
                     for unit in combatants:
-                        print(unit.name)
+                        print(unit.name, style="green")
                     currentCombatantCount = len(combatants)
                     
                 if isinstance(combatant, Enemy.Enemy): # enemy turn
@@ -63,19 +64,19 @@ class Combat:
                     if not self.enemies:
                         return self.make_result(True) # all enemies dead
                     # player can choose an enemy to attack
-                    print("\nCombat report:")
+                    print("\nCombat report:", style="bold cyan")
                     size = max(len(self.enemies), len(self.team))
                     for position, enemy, teamMember in zip_longest(range(1,size+1), self.enemies, self.team, fillvalue=''):
                         if teamMember == '' and enemy != '':
-                            print(f"{position}) {enemy.name} - {enemy.hp}HP")
+                            print(f"{position}) {enemy.name} - {enemy.hp}HP", style="yellow")
                         elif teamMember != '' and enemy == '':
-                            print(f"                                    {teamMember.name} - {teamMember.hp}HP")
+                            print(f"                                    {teamMember.name} - {teamMember.hp}HP", style="green")
                         else:
-                            print(f"{position}) {enemy.name} - {enemy.hp}HP                   {teamMember.name} - {teamMember.hp}HP")
+                            print(f"{position}) {enemy.name} - {enemy.hp}HP                   {teamMember.name} - {teamMember.hp}HP", style="yellow")
 
-                    print(f"\n{combatant.name}, which weapon do you want to use this turn?")
+                    print(f"\n{combatant.name}, which weapon do you want to use this turn?", style="bold")
                     combatant.choose_weapon()
-                    print(f"Choose an enemy to attack (enter the number):")
+                    print(f"Choose an enemy to attack (enter the number):", style="bold yellow")
                     
                     while True:
                         choice = 0
@@ -84,9 +85,9 @@ class Combat:
                             if choice <= len(list(self.enemies)) and choice > 0: # check both conditions here
                                 break
                             else:
-                                print("Invalid choice. Please select a new enemy with the numbers on the left.\n") # input is int but invalid
+                                print("Invalid choice. Please select a new enemy with the numbers on the left.\n", style="bold red") # input is int but invalid
                         except:
-                            print("Invalid choice. Please select a new enemy with the numbers on the left.\n") # input is not int
+                            print("Invalid choice. Please select a new enemy with the numbers on the left.\n", style="bold red") # input is not int
                     
                     target = list(self.enemies)[choice-1] # pick the Enemy object
                     hit_result = self.calculate_hit(combatant, target)
@@ -106,7 +107,7 @@ class Combat:
     def calculate_hit(self, combatant, enemy): # combatant rolling the hit
         d20 = random.randint(1,20)
         if d20 == 1:
-            print(f"\n{combatant.name} critically missed!")
+            print(f"\n{combatant.name} critically missed!", style="red")
             return (False, 1) # 1 means crit, True means hit
         elif d20 == 20:
             return (True, 1) # True represents hit landing
@@ -173,12 +174,12 @@ class Combat:
             else: # enemy hits unarmed
                 bonusDmg = combatant.get_bonus(combatant.enemyData[desiredStat])
             dmg = max(0,1 + bonusDmg) # default unarmed dmg is 1 + bonus
-            print(f"\n{combatant.name} is unarmed but hits {enemy.name} for {dmg} damage!")
+            print(f"\n{combatant.name} is unarmed but hits {enemy.name} for {dmg} damage!", style="yellow")
             return dmg
         if crit:
-            print(f"\n{combatant.name} landed a critical hit on {enemy.name} with their {combatant.weapon['name']} for {dmg} damage!")
+            print(f"\n{combatant.name} landed a critical hit on {enemy.name} with their {combatant.weapon['name']} for {dmg} damage!", style="bold red")
         else:
-            print(f"\n{combatant.name} hits {enemy.name} with their {combatant.weapon['name']} for {dmg} damage!")
+            print(f"\n{combatant.name} hits {enemy.name} with their {combatant.weapon['name']} for {dmg} damage!", style="yellow")
         return dmg
     
     def calculate_initiative(self, combatant): # Enemy or Character arg
@@ -193,8 +194,8 @@ class Combat:
     
     def make_result(self, win):
             if not win:
-                print("Your party has been defeated! Game over.")
+                print("Your party has been defeated! Game over.", style="bold red")
                 return False
             else:
-                print("You have defeated all enemies! Victory!")
+                print("You have defeated all enemies! Victory!", style="bold green")
                 return True

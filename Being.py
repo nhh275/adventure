@@ -2,6 +2,7 @@ import math
 import time
 import requests
 from abc import ABC, abstractmethod
+from console_utils import cprint as print
 
 class Being(ABC):
     def __init__(self, name, hp):
@@ -29,7 +30,7 @@ class Being(ABC):
     
     def die(self):
         self.alive = False
-        print(f"{self.name} has died.")
+        print(f"{self.name} has died.", style="bold red")
     
     def attack(self, target, dmg=0):
         target.add_hp(-dmg)
@@ -42,5 +43,5 @@ class Being(ABC):
             self.hp = 0
             self.die()
         else:
-            print(f"{self.name} now has {self.hp} HP.")
+            print(f"{self.name} now has {self.hp} HP.", style="yellow")
     
