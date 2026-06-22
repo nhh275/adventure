@@ -152,7 +152,7 @@ def roundabout(party):
     # time to scrap 
     if not battles.goblins(party): # lost fight, end
         return
-
+    party.heal_party()
     print(
         "\nFollowing your great victory, you pause in the traffic created by the commotion to rest and heal your wounds. "
         "Others around you seem to be relatively unfazed by what you've been through, as if this is just a regular occurrence in Swindon, and the car in front eventually drives off to "
@@ -205,7 +205,7 @@ def city(party):
     
     if not battles.skeleton(party):
         return
-
+    party.heal_party()
     print(
         "\nFollowing your great victory, you pause by the roadside to rest and heal your wounds. "
         "Others in the area seem to be relatively unfazed by what you've been through, as if this is just a regular occurrence in Swindon, as they continue with their days. "
@@ -293,13 +293,6 @@ def main():
     raceData = response.json()
 
     print(f"\n{name} the mighty {raceData['name']} {classData['name']}! A wonderful choice.", style="bold green")
-    print("\nYou have the following proficiencies and ability bonuses:")
-
-    for i in range(len(classData['proficiencies'])):
-        print(classData['proficiencies'][i]['name'])
-    for i in range(len(raceData['ability_bonuses'])):
-        print(f"+ {raceData['ability_bonuses'][i]['bonus']} to {raceData['ability_bonuses'][i]['ability_score']['name']}")
-
     print(raceData['language_desc'])
     # leave further customisation for now
     
@@ -415,6 +408,16 @@ def main():
     return
 
 def create_character(party, classData, raceData, name, equipmentToAdd=None):
+    proficienciesToAdd = []
+    for item in classData['proficiencies']: 
+        proficienciesToAdd.append(item)
+    
+    url = f"https://www.dnd5eapi.co/api/2014/races/{raceData['index']}/proficiencies"
+    profData = requests.get(url).json()
+    if profData['count'] > 0:
+        proficienciesToAdd.extend(result for result in profData['results'] if result not in proficienciesToAdd)
+        
+    # add equipment if None...
     if equipmentToAdd is None: # non-player character
         equipmentToAdd = []
         for item in classData['starting_equipment']: # even if the class doesnt have starting equipment, check
@@ -434,10 +437,13 @@ def create_character(party, classData, raceData, name, equipmentToAdd=None):
                     
                     elif itemType['option_type'] == "choice": # expand into a category to choose from
                         add_default_equipment_from_category(itemType['choice']['from']['equipment_category']['url'], equipmentToAdd, itemType['choice']['choose'])
-    
-    proficienciesToAdd = []
-    for item in classData['proficiencies']: 
-        proficienciesToAdd.append(item)
+    else:
+        print("\nYou have the following proficiencies and ability bonuses:") # tell the player character proficiencies
+        for prof in proficienciesToAdd:
+            print(prof['name'])
+        for i in range(len(raceData['ability_bonuses'])):
+            print(f"+ {raceData['ability_bonuses'][i]['bonus']} to {raceData['ability_bonuses'][i]['ability_score']['name']}")
+
     
     # create ability scores
     scores = []

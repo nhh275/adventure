@@ -1,3 +1,4 @@
+import math
 import random
 import requests
 from Being import Being
@@ -5,7 +6,7 @@ from console_utils import cprint as print
 
 
 class Character(Being):
-    def __init__(self, name, classData, raceData, equipment, proficiencies, s, d, c, i, w, ch, hp):
+    def __init__(self, name, classData, raceData, equipment, proficiencies, s, d, c, i, w, ch, hp, level=1):
         super().__init__(name, hp)
         self.classData = classData # whole JSON of class data
         self.raceData = raceData # ^^ race
@@ -18,9 +19,11 @@ class Character(Being):
         self.wisdom = w
         self.charisma = ch
         self.maxHP = hp
+        self.level = level
         self.set_speed()
         self.set_weapon_list()
         self.set_weapon()
+        self.proficientWeapon = 0 # prof bonus to add for attack rolls
         self.set_AC()
     
     def show_equipment(self):
@@ -67,16 +70,27 @@ class Character(Being):
             self.add_weapon_to_list(itemData)
 
     
-    def set_weapon(self, weaponToEquip=None): # return True if a weapon is equipped, False otherwise
+    def set_weapon(self, weaponToEquip=None): 
         if weaponToEquip is None:
             self.weapon = None
             self.weapon = random.choice(self.weapons) # pick random weapon from inventory
-            return True
         else: # weapon passed in to equip
             if "damage" in weaponToEquip: # equip this - do not add it to the list, new weapons will run add_weapon_to_list directly
                 self.weapon = weaponToEquip
-                return True
-        return False
+        
+        if self.weapon is None: # no Weapon equipped, always proficient with unarmed
+            self.proficientWeapon = 1 + math.ceil(self.level/4) # round up, so +2 for level 1-4 etc
+        else: # a weapon has been equipped
+            weaponType = self.weapon['weapon_category'].lower() # like "simple"
+            for proficiency in self.proficiencies:
+                if f"{weaponType}-weapons" in proficiency['index']: # like "simple-weapons", this matches...
+                    self.proficientWeapon = 1 + math.ceil(self.level/4)
+                    break
+                else: # check for 1-1 proficiency in the weapon itself
+                    if self.weapon['index'] in proficiency['index']: # like 'handaxe' in 'handaxes'
+                        self.proficientWeapon = 1 + math.ceil(self.level/4)
+                        break        
+        
     
     def add_weapon_to_list(self, weaponToAdd):
         if 'damage' in weaponToAdd: # check if the equipment has a damage attribute (it can be used as a weapon)

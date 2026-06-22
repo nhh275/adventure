@@ -129,6 +129,7 @@ class Combat:
             return ((d20 + bonus >= enemy.AC), 0) # True if hit >= AC, false otherwise, no crit
         else: # party member trying to hit enemy
             bonus = combatant.get_bonus(getattr(combatant, desiredStat))
+            bonus += combatant.proficientWeapon # prof bonus for the weapon, already set in set_weapon
             return ((d20 + bonus >= enemy.AC),0) # True if hit >= AC, false otherwise, no crit
         
     def calculate_damage(self, combatant, enemy, crit): # return int for damage
