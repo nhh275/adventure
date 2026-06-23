@@ -16,9 +16,7 @@ def goblins(party):
     
     # undergo combat
     combat = Combat(party.members, goblins)
-    win = combat.start_combat()
-    
-    return win
+    return combat.start_combat() # returns tuple of (Success, xpListToAdd)
 
 def skeleton(party):
     url = "https://www.dnd5eapi.co/api/2014/monsters/skeleton"
@@ -30,6 +28,4 @@ def skeleton(party):
     
     # undergo combat
     combat = Combat(party.members, skeletonList)
-    win = combat.start_combat()
-    
-    return win
+    return combat.start_combat()

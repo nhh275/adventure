@@ -150,8 +150,10 @@ def roundabout(party):
     create_character(party, classData, raceData, "Terry")
     
     # time to scrap 
-    if not battles.goblins(party): # lost fight, end
+    resultTuple = battles.goblins(party)
+    if not resultTuple[0]:
         return
+    party.give_xp(resultTuple[1]) # list of xp from enemies to add to party members
     party.heal_party()
     print(
         "\nFollowing your great victory, you pause in the traffic created by the commotion to rest and heal your wounds. "
@@ -203,9 +205,12 @@ def city(party):
           "clanking sound, which emanates from its hollow body as it shifts in place. Looking down at it, its eyes turn red, piercing into your soul, and it charges you!", style="cyan")
     input("> ")
     
-    if not battles.skeleton(party):
+    resultTuple = battles.skeleton(party)
+    if not resultTuple[0]:
         return
+    party.give_xp(resultTuple[1]) # list of xp from enemies to add to party members
     party.heal_party()
+    
     print(
         "\nFollowing your great victory, you pause by the roadside to rest and heal your wounds. "
         "Others in the area seem to be relatively unfazed by what you've been through, as if this is just a regular occurrence in Swindon, as they continue with their days. "

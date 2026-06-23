@@ -10,6 +10,9 @@ class Combat:
     def __init__(self, teamMembers, enemyMembers): # lists of party members + enemies
         self.team = teamMembers
         self.enemies = enemyMembers
+        self.xpList = []
+        for original in self.enemies:
+            self.xpList.append(original.enemyData['xp']) # xp yield for each enemy
     
     def start_combat(self):
         combatants = self.team + self.enemies # concat two lists
@@ -196,7 +199,7 @@ class Combat:
     def make_result(self, win):
             if not win:
                 print("Your party has been defeated! Game over.", style="bold red")
-                return False
+                return (False, [])
             else:
                 print("You have defeated all enemies! Victory!", style="bold green")
-                return True
+                return (True, self.xpList)

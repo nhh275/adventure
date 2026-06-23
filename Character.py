@@ -6,7 +6,7 @@ from console_utils import cprint as print
 
 
 class Character(Being):
-    def __init__(self, name, classData, raceData, equipment, proficiencies, s, d, c, i, w, ch, hp, level=1):
+    def __init__(self, name, classData, raceData, equipment, proficiencies, s, d, c, i, w, ch, hp, level=1, xp=299):
         super().__init__(name, hp)
         self.classData = classData # whole JSON of class data
         self.raceData = raceData # ^^ race
@@ -20,12 +20,56 @@ class Character(Being):
         self.charisma = ch
         self.maxHP = hp
         self.level = level
+        self.xp = xp
         self.set_speed()
         self.set_weapon_list()
         self.set_weapon()
         self.proficientWeapon = 0 # prof bonus to add for attack rolls
         self.set_AC()
     
+    def check_level_up(self):
+        requiredXP = 300* 3**(self.level-1) # say it triples per level (unbalanced for post-4)
+        if self.xp < requiredXP:
+            return
+        
+        # level reached...
+        self.level += 1
+        self.xp = 0
+        print(f"{self.name} has reached level {self.level}!", style="bold green")
+        # class levelup TBD
+        if self.proficientWeapon != 0: # proficient with current wpn
+            self.proficientWeapon = 1 + math.ceil(self.level/4) # account for new level in proficiency bonus
+        
+        print(f"What should {self.name} level up with 2 points?", style="bold yellow")
+        print(f"1) Strength ({self.strength})\n2) Dexterity ({self.dexterity})\n3) Constitution ({self.constitution})\n4) Intelligence ({self.intelligence})\n5) Wisdom ({self.wisdom})\n6) Charisma ({self.charisma})", style="green")
+
+        while True:
+            choice = 0
+            try:
+                choice = int(input("> ").strip())
+                if choice <= 6 and choice > 0: # check both conditions here
+                    break
+                else:
+                    print("Invalid choice. Please select a new skill with the numbers on the left.\n", style="bold red") # input is int but invalid
+            except:
+                print("Invalid choice. Please select a new skill with the numbers on the left.\n", style="bold red") # input is not int
+        match (choice):
+            case 1:
+                self.strength = min(self.strength+2,20) # cap at 20
+            case 2:
+                self.dexterity = min(self.dexterity+2,20)
+            case 3:
+                self.constitution = min(self.constitution+2,20)
+            case 4:
+                self.intelligence = min(self.intelligence+2,20)
+            case 5:
+                self.wisdom = min(self.wisdom+2,20)
+            case 6:
+                self.charisma = min(self.charisma+2,20)
+        # extra hit die...
+        self.hp = self.level*self.classData['hit_die'] + self.get_bonus(self.constitution)*self.level # using potentially new constitution value, so recalculate
+        self.maxHP = self.hp
+        
     def show_equipment(self):
         prevItem = ""
         dupeCount = 1
@@ -74,6 +118,8 @@ class Character(Being):
         if weaponToEquip is None:
             self.weapon = None
             self.weapon = random.choice(self.weapons) # pick random weapon from inventory
+        elif weaponToEquip == self.weapon: # already equipped this
+            return
         else: # weapon passed in to equip
             if "damage" in weaponToEquip: # equip this - do not add it to the list, new weapons will run add_weapon_to_list directly
                 self.weapon = weaponToEquip

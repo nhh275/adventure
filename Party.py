@@ -1,3 +1,4 @@
+from console_utils import cprint as print
 class Party:
     def __init__(self):
         self.members = []
@@ -19,3 +20,9 @@ class Party:
         for member in self.members:
             member.hp = member.maxHP # reset to full health, typically after combat win
             member.alive = True
+    
+    def give_xp(self, xpList):
+        print(f"The party gained {sum(xpList)}XP!\n", style="bold yellow")
+        for member in self.members:
+            member.xp += sum(xpList)
+            member.check_level_up() # check for a ding
