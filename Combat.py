@@ -20,7 +20,10 @@ class Combat:
         currentCombatantCount = len(combatants)
         print("\nTurn order:", style="bold cyan")
         for unit in combatants:
-            print(unit.name, style="green")
+            if isinstance(unit, Character.Character):
+                print(unit.name, style="green")
+            else:
+                print(unit.name, style="red")
         time.sleep(1)
         if not isinstance(combatants[0], Character.Character): # display combatants before enemies attack
             print("\nCombat report:", style="bold cyan")
@@ -43,7 +46,10 @@ class Combat:
                 if len(combatants) != currentCombatantCount:
                     print("\nUpdated turn order:", style="cyan")
                     for unit in combatants:
-                        print(unit.name, style="green")
+                        if isinstance(unit, Character.Character):
+                            print(unit.name, style="green")
+                        else:
+                            print(unit.name, style="red")
                     currentCombatantCount = len(combatants)
                     
                 if isinstance(combatant, Enemy.Enemy): # enemy turn
@@ -59,7 +65,7 @@ class Combat:
                         if not target.alive: # killed its target, remove from combat
                             self.team.remove(target)
                     elif not hit_result[0] and hit_result[1] != 1:
-                        print(f"\n{combatant.name} missed their attack on {target.name}.")    
+                        print(f"\n{combatant.name} missed their attack on {target.name}.", style="gray")    
                 
                 else: # team member turn
                     if not combatant.alive:
@@ -99,7 +105,7 @@ class Combat:
                         if not target.alive: # killed its target, remove from combat
                             self.enemies.remove(target)
                     elif not hit_result[0] and hit_result[1] != 1: # non-critical miss, display this message instead of crit miss message
-                        print(f"\n{combatant.name} missed their attack on {target.name}.")
+                        print(f"\n{combatant.name} missed their attack on {target.name}.", style="gray")
             turn += 1
             # at end of turn, check if either team is fully dead
             if not self.team:
@@ -198,8 +204,8 @@ class Combat:
     
     def make_result(self, win):
             if not win:
-                print("Your party has been defeated! Game over.", style="bold red")
+                print("\nYour party has been defeated! Game over.", style="bold red")
                 return (False, [])
             else:
-                print("You have defeated all enemies! Victory!", style="bold green")
+                print("\nYou have defeated all enemies! Victory!", style="bold green")
                 return (True, self.xpList)

@@ -6,7 +6,7 @@ from console_utils import cprint as print
 
 
 class Character(Being):
-    def __init__(self, name, classData, raceData, equipment, proficiencies, s, d, c, i, w, ch, hp, level=1, xp=299):
+    def __init__(self, name, classData, raceData, equipment, proficiencies, s, d, c, i, w, ch, hp, level=1, xp=0):
         super().__init__(name, hp)
         self.classData = classData # whole JSON of class data
         self.raceData = raceData # ^^ race
@@ -91,6 +91,7 @@ class Character(Being):
             print()
     
     def choose_weapon(self):
+        self.weapons = sorted(self.weapons, key=lambda d: int(d['damage']['damage_dice'][d['damage']['damage_dice'].index("d")+1:]), reverse=True)
         for i,item in enumerate(self.weapons):
             print(f"{i+1}) {item['name']} - {item['damage']['damage_dice']}", style="green")
         while True:
