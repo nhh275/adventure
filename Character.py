@@ -27,6 +27,11 @@ class Character(Being):
         self.proficientWeapon = 0 # prof bonus to add for attack rolls
         self.set_AC()
     
+    def ability_check(self, bonus, dc): # ability check against a difficulty class
+        d20 = random.randint(1,20) # roll, no crits for ability check
+        score = d20 + bonus
+        return score >= dc # True if passes check, False otherwise
+    
     def check_level_up(self):
         requiredXP = 300* 3**(self.level-1) # say it triples per level (unbalanced for post-4)
         if self.xp < requiredXP:

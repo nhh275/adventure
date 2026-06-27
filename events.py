@@ -62,7 +62,7 @@ def roundabout(party):
     main.create_character(party, classData, raceData, "Terry")
     
     # time to scrap 
-    resultTuple = battles.goblins(party)
+    resultTuple = battles.battle(party, surprise=0, enemyIndex="goblin", numEnemiesLower=2, numEnemiesHigher=3)
     if not resultTuple[0]:
         return
     party.give_xp(resultTuple[1]) # list of xp from enemies to add to party members
@@ -98,7 +98,7 @@ def city(party):
           "clanking sound, which emanates from its hollow body as it shifts in place. Looking down at it, its eyes turn red, piercing into your soul, and it charges you!", style="cyan")
     input("> ")
     
-    resultTuple = battles.skeleton(party)
+    resultTuple = battles.battle(party, surprise=0, enemyIndex="skeleton", numEnemiesLower=1)
     if not resultTuple[0]:
         return
     party.give_xp(resultTuple[1]) # list of xp from enemies to add to party members
@@ -142,13 +142,52 @@ def choice2(party): # same choice after the Goblins and Skeleton fight pathways,
 
 def supermarket(party):
     print(
-        "\nPlaceholder. "
-        "Here.",
+        "\nYou decide you need to pick up some things while you're in town, so you pop in to the closest shop. Finding yourself in a Lidl, the best of all supermarket chains, you "
+        "feel gleeful and prepared to tackle any further challenges that come your way. The immense supply of products of all kinds, from rice to lawnmowers to frozen pizza, fills your "
+        "heart with joy as you wander the aisles.",
         style="cyan"
     )
     input("> ")
-
+    print(
+        "\nDuring your time in the shop, you can't help but find yourself drawn to the sweet smell of freshly baked pastries emanating from a corner of the room. The Lidl Bakery, one of "
+        "the greatest creations God blessed her people with, now stands in front of you, inviting you to grab a bag and select some lovely treats for a very affordable price. You feel in "
+        "this moment perhaps the happiest you ever have, despite your troubles earlier in the day, basking in the glow of croissants, pastéis de nata, and delectable pains au chocolat.",
+        style="cyan"
+    )
+    party.give_xp([50]) # lidl xp, it's wonderful
+    input("> ")
+    print(
+        "\nWhen you're done shopping, you amble up to the checkout, but something strikes you as peculiar about the cashier - something is... off. As you progress up the checkout line, "
+        "you attempt to study their face and behaviour more deeply, trying to ascertain if there is a threat present, or this is simply a random feeling.",
+        style="cyan"
+    )
+    input(">")
+    player = party.members[0]
+    check = player.ability_check(player.get_bonus(player.wisdom),10) # roll for perception with DC 10 (easy)
+    if check: # successful perception
+        print(
+            "\nUpon further examination, you are alarmed to find out the cashier is actually a terrifying ghoul! The evil being does not realises it's been rumbled, so as it continues to "
+            "scan groceries, you decide to be brave and jump it from across the conveyor, taking the monster by surprise!",
+            style="cyan"
+        )
+        input("> ")
+        resultTuple = battles.battle(party, surprise=2, enemyIndex="ghoul", numEnemiesLower=1) # enemies surprised
+    else: # could not perceive anything
+        print(
+            "\nYou do not find anything wrong with the cashier, so you make idle small talk with them as is your duty as a British citizen, mentioning the terrible weather and so on. "
+            "You pay and turn away, ready to leave the shop, when you are suddenly struck from behind and knocked onto the floor! It turns out this mysterious checkout employee is "
+            "actually a horrifying ghoul!"
+        )
+        input(">")
+        resultTuple = battles.battle(party, surprise=1, enemyIndex="ghoul", numEnemiesLower=1) # team surprised
+    
+    if not resultTuple[0]:
+        return
+    party.give_xp(resultTuple[1]) # list of xp from enemies to add to party members
+    party.heal_party()
+        
 def cathedral(party):
+    
     print(
         "\nPlaceholder. "
         "Here.",

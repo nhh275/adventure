@@ -4,28 +4,19 @@ from Enemy import Enemy
 from Combat import Combat
 from console_utils import cprint as print
 
-def goblins(party):
-    url = "https://www.dnd5eapi.co/api/2014/monsters/goblin"
-    response = requests.get(url)
-    goblinData = response.json() 
-    numGoblins = random.randint(2, 3) # inclusive both ways, gen a random number of goblins
-    goblins = [] # Enemy list
-    for i in range(numGoblins):
-        goblins.append(Enemy(f"Goblin {i+1}", goblinData, goblinData['hit_points']))
-    print(f"\nYou encounter {numGoblins} goblins!", style="bold red")
-    
-    # undergo combat
-    combat = Combat(party.members, goblins)
-    return combat.start_combat() # returns tuple of (Success, xpListToAdd)
-
-def skeleton(party):
-    url = "https://www.dnd5eapi.co/api/2014/monsters/skeleton"
+def battle(party, surprise, enemyIndex, numEnemiesLower, numEnemiesHigher=0): # DRY subroutine to work with any enemy, rather than 1 routine per enemy
+    url = f"https://www.dnd5eapi.co/api/2014/monsters/{enemyIndex}" # like goblin or ghoul
     response = requests.get(url)
     enemyData = response.json() 
-    skeletonList = [Enemy(f"Skeleton", enemyData, enemyData['hit_points'])] # Enemy list (1 skelly)
-
-    print(f"\nYou encounter a skeleton!", style="bold red")
+    if numEnemiesHigher < numEnemiesLower: # just 1 enemy, a higher bound has not been passed in (0 default)
+        numEnemies = numEnemiesLower
+    else:
+        numEnemies = random.randint(numEnemiesLower, numEnemiesHigher) # random number of enemies from lower to upper bound
+    enemies = [] # Enemy list
+    for i in range(numEnemies):
+        enemies.append(Enemy(f"{enemyData['name']} {i+1}", enemyData, enemyData['hit_points']))
+    print(f"\nYou encounter {numEnemies} {enemyData['index']}/s!", style="bold red")
     
     # undergo combat
-    combat = Combat(party.members, skeletonList)
-    return combat.start_combat()
+    combat = Combat(party.members, enemies, surprise)
+    return combat.start_combat() # returns tuple of (Success, xpListToAdd)

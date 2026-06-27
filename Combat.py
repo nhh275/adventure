@@ -7,10 +7,11 @@ import Enemy
 from console_utils import cprint as print
 
 class Combat:
-    def __init__(self, teamMembers, enemyMembers): # lists of party members + enemies
+    def __init__(self, teamMembers, enemyMembers, surprise): # lists of party members + enemies
         self.team = teamMembers
         self.enemies = enemyMembers
         self.xpList = []
+        self.surprise = surprise
         for original in self.enemies:
             self.xpList.append(original.enemyData['xp']) # xp yield for each enemy
     
@@ -53,6 +54,9 @@ class Combat:
                     currentCombatantCount = len(combatants)
                     
                 if isinstance(combatant, Enemy.Enemy): # enemy turn
+                    if turn == 1 and self.surprise == 2: # enemy surprised, skip first turn
+                        print(f"{combatant.name} is surprised and misses their first turn!", style="red")
+                        continue
                     if not combatant.alive: # killed, no turn
                         continue
                     if not self.team:
@@ -68,6 +72,9 @@ class Combat:
                         print(f"\n{combatant.name} missed their attack on {target.name}.", style="gray")    
                 
                 else: # team member turn
+                    if turn == 1 and self.surprise == 1: # enemy surprised, skip first turn
+                        print(f"{combatant.name} is surprised and misses their first turn!", style="red")
+                        continue
                     if not combatant.alive:
                         continue
                     if not self.enemies:
