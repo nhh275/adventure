@@ -186,14 +186,64 @@ def supermarket(party):
     party.give_xp(resultTuple[1]) # list of xp from enemies to add to party members
     party.heal_party()
         
-def cathedral(party):
-    
+def cathedral(party):   
     print(
-        "\nPlaceholder. "
-        "Here.",
+        "\nYou decide to visit the beautiful cathedral that takes up centre stage in the city. As you enter through the grand front door, you are stunned by the breathtaking architecture "
+        "and stained glass windows. The building must be centuries old, and you can't help but wonder about what these walls have withstood and been home to over the years.",
         style="cyan"
     )
     input("> ")
+    print(
+        "\nDeep in contemplation, you are approached by a person clad in peculiarly black religious attire who introduces themselves as a priest who works at the cathedral. You're surprised "
+        "to learn that there are still regular services occurring in such a historic place, and you're told all about the wonderful lore behind the building. The priest offers you their name, " 
+        "Raven, and inquires about the reason for your visit - to both the city and their workplace.",
+        style="cyan"
+    )
+    input(">")
+    print(
+        "\nWhen you enlighten Raven about your earlier experience in combat, they seem to pay extra attention to you, but do not seem especially alarmed. You feel as if you are being "
+        "studied, like the priest is scrutinising your expressions as you regale them with your tale, but you try to act unbothered and continue as normal.",
+        style="cyan"
+    )
+    input(">")
+    player = party.members[0]
+    check = player.ability_check(player.get_bonus(player.charisma),1) # roll for acting with DC 10 (easy)
+    if check: # success
+        print(
+            "\nRaven seems pleased by your heroism, and pauses in thought before responding to you. With a gentle nod, they say 'Hmm, yes. You're perfect...' and trail off. You are "
+            "reasonably taken aback by these words, and ask the priest to elaborate. 'You seem a great warrior, fit to handle a tremendous burden that has been plaguing our city.' "
+            "You were not expecting to hear this during a touristic visit to a cathedral, but are intrigued nonetheless, and demand further details.",
+            style="cyan"
+        )
+        input("> ")
+        print(
+            "\nThe priest was impressed by your story, and granted you a level up!", style="bold green"
+        )
+        party.level_party_up()
+    else:
+        print(
+            "\nYou feel yourself clam up as the nerves of being intensely observed get to you. Mumbling through the end of your encounter, Raven sports a mild grimace and a shrug. "
+            "'I suppose you'll do', they say, rightfully confusing you and provoking you to ask 'What does that mean?'. The priest elaborates, talking of an 'awful monster spreading "
+            "evil through the city', and it seems that they have designated you as the warrior to stave it off.",
+            style="cyan"
+        )
+        input(">")
+    
+    print(
+        "\nRaven tells you all you need to know, and you have little choice but to accept this quest that has been thrust upon you. They attempt to guide you on where to go and what to "
+        "do next, but since you're no local, the directions are of little help. In the end, the priest offers to join your party in this grand adventure to save the city of Swindon.",
+        style="cyan"
+    )
+    input("> ")
+
+    url = "https://www.dnd5eapi.co/api/2014/classes/cleric"
+    response = requests.get(url)
+    classData = response.json()
+    url = "https://www.dnd5eapi.co/api/2014/races/elf"
+    response = requests.get(url)
+    raceData = response.json()
+    main.create_character(party, classData, raceData, "Raven")
+    party.get_member_by_name("Raven").check_level_up(freeLevel=True) # start Raven at lv2, lets user choose what ability to level up
 
 def park(party):
     print(

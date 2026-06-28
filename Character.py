@@ -22,9 +22,9 @@ class Character(Being):
         self.level = level
         self.xp = xp
         self.set_speed()
+        self.proficientWeapon = 0 # prof bonus to add for attack rolls
         self.set_weapon_list()
         self.set_weapon()
-        self.proficientWeapon = 0 # prof bonus to add for attack rolls
         self.set_AC()
     
     def ability_check(self, bonus, dc): # ability check against a difficulty class
@@ -32,15 +32,16 @@ class Character(Being):
         score = d20 + bonus
         return score >= dc # True if passes check, False otherwise
     
-    def check_level_up(self):
-        requiredXP = 300* 3**(self.level-1) # say it triples per level (unbalanced for post-4)
-        if self.xp < requiredXP:
-            return
-        
+    def check_level_up(self, freeLevel=False):
+        if not freeLevel: # xp from combat etc, not a storyline ding
+            requiredXP = 300* 3**(self.level-1) # say it triples per level (unbalanced for post-4)
+            if self.xp < requiredXP:
+                return
+        # if free level up given, do the levelup, as with combat exp:
         # level reached...
         self.level += 1
         self.xp = 0
-        print(f"{self.name} has reached level {self.level}!", style="bold green")
+        print(f"\n{self.name} has reached level {self.level}!", style="bold green")
         # class levelup TBD
         if self.proficientWeapon != 0: # proficient with current wpn
             self.proficientWeapon = 1 + math.ceil(self.level/4) # account for new level in proficiency bonus
@@ -61,19 +62,26 @@ class Character(Being):
         match (choice):
             case 1:
                 self.strength = min(self.strength+2,20) # cap at 20
+                print(f"{self.name}'s strength is now at {self.strength} points!", style="bold yellow")
             case 2:
                 self.dexterity = min(self.dexterity+2,20)
+                print(f"{self.name}'s dexterity is now at {self.dexterity} points!", style="bold yellow")
             case 3:
                 self.constitution = min(self.constitution+2,20)
+                print(f"{self.name}'s constitution is now at {self.constitution} points!", style="bold yellow")
             case 4:
                 self.intelligence = min(self.intelligence+2,20)
+                print(f"{self.name}'s intelligence is now at {self.intelligence} points!", style="bold yellow")
             case 5:
                 self.wisdom = min(self.wisdom+2,20)
+                print(f"{self.name}'s wisdom is now at {self.wisdom} points!", style="bold yellow")
             case 6:
                 self.charisma = min(self.charisma+2,20)
+                print(f"{self.name}'s charisma is now at {self.charisma} points!", style="bold yellow")
         # extra hit die...
         self.hp = self.level*self.classData['hit_die'] + self.get_bonus(self.constitution)*self.level # using potentially new constitution value, so recalculate
         self.maxHP = self.hp
+        print(f"{self.name} now has {self.hp} hit points!", style="bold yellow")
         
     def show_equipment(self):
         prevItem = ""

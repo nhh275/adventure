@@ -273,15 +273,18 @@ def create_character(party, classData, raceData, name, equipmentToAdd=None):
                 numChoices = optionSet['choose']
                 
                 for _ in range(numChoices):
-                    itemType = optionSet['from']['options'][0]
-
-                    if itemType['option_type'] == "counted_reference": # simple, add X of this item
-                        for _ in range(itemType['count']):
-                            itemToAdd = itemType['of']
-                            equipmentToAdd.append(itemToAdd)
-                    
-                    elif itemType['option_type'] == "choice": # expand into a category to choose from
-                        add_default_equipment_from_category(itemType['choice']['from']['equipment_category']['url'], equipmentToAdd, itemType['choice']['choose'])
+                    if "options" not in optionSet['from'].keys(): # like cleric holy symbol
+                        add_default_equipment_from_category(optionSet['from']['equipment_category']['url'], equipmentToAdd, optionSet['choose'])
+                    else:
+                        itemType = optionSet['from']['options'][0]
+                        
+                        if itemType['option_type'] == "counted_reference": # simple, add X of this item
+                            for _ in range(itemType['count']):
+                                itemToAdd = itemType['of']
+                                equipmentToAdd.append(itemToAdd)
+                        
+                        elif itemType['option_type'] == "choice": # expand into a category to choose from
+                            add_default_equipment_from_category(itemType['choice']['from']['equipment_category']['url'], equipmentToAdd, itemType['choice']['choose'])
     else:
         print("\nYou have the following proficiencies and ability bonuses:") # tell the player character proficiencies
         for prof in proficienciesToAdd:
@@ -302,7 +305,7 @@ def create_character(party, classData, raceData, name, equipmentToAdd=None):
 
     hp = classData['hit_die'] + math.floor((scores[2]-10)/2) # generate hp from constitution modifier and class hit die
     character = Character(name, classData, raceData, equipmentToAdd, proficienciesToAdd, scores[0], scores[1], scores[2], scores[3], 
-                          scores[4], scores[5], max(10,math.floor(hp*1.5))) # +50% hp to be more generous, lowest is 10hp
+                          scores[4], scores[5], max(10,math.floor(hp*1))) # +50% hp to be more generous, lowest is 10hp
     print(f"\n{name} has the following equipment:")
     character.show_equipment()
     party.add_member(character)

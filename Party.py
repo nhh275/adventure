@@ -20,3 +20,17 @@ class Party:
         for member in self.members:
             member.xp += sum(xpList)
             member.check_level_up() # check for a ding
+    
+    def level_party_up(self):
+        for member in self.members:
+            member.check_level_up(freeLevel=True)
+    
+    def show_party_names(self):
+        print("Your party is now as follows:",style="cyan")
+        for member in self.members:
+            print(f"{member.name} (lv{member.level})",style="green")
+    
+    def get_member_by_name(self, name):
+        for member in self.members:
+            if member.name.lower().strip() == name.lower().strip():
+                return member # Character object
