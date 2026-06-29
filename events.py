@@ -176,7 +176,8 @@ def supermarket(party):
         print(
             "\nYou do not find anything wrong with the cashier, so you make idle small talk with them as is your duty as a British citizen, mentioning the terrible weather and so on. "
             "You pay and turn away, ready to leave the shop, when you are suddenly struck from behind and knocked onto the floor! It turns out this mysterious checkout employee is "
-            "actually a horrifying ghoul!"
+            "actually a horrifying ghoul!",
+            style="cyan"
         )
         input(">")
         resultTuple = battles.battle(party, surprise=1, enemyIndex="ghoul", numEnemiesLower=1) # team surprised
@@ -207,7 +208,7 @@ def cathedral(party):
     )
     input(">")
     player = party.members[0]
-    check = player.ability_check(player.get_bonus(player.charisma),1) # roll for acting with DC 10 (easy)
+    check = player.ability_check(player.get_bonus(player.charisma),10) # roll for acting with DC 10 (easy)
     if check: # success
         print(
             "\nRaven seems pleased by your heroism, and pauses in thought before responding to you. With a gentle nod, they say 'Hmm, yes. You're perfect...' and trail off. You are "

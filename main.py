@@ -253,6 +253,33 @@ def main():
     return
 
 def create_character(party, classData, raceData, name, equipmentToAdd=None):
+    # create INITIAL ability scores (before bonuses)- roll d6 4 times and remove the lowest roll, sum others, per skill
+    scores = []
+    for _ in range(6):
+        rolls = []
+        for _ in range(4):
+            d6 = random.randint(1,6)
+            rolls.append(d6)
+        rolls.remove(min(rolls))
+        scores.append(sum(rolls))
+    
+    # apply default race ability bonuses
+    for i in range(len(raceData['ability_bonuses'])):
+        bonus = raceData['ability_bonuses'][i]
+        match bonus['ability_score']['index']:
+            case "str":
+                scores[0] += bonus['bonus']
+            case "dex":
+                scores[1] += bonus['bonus']
+            case "con":
+                scores[2] += bonus['bonus']
+            case "int":
+                scores[3] += bonus['bonus']
+            case "wis":
+                scores[4] += bonus['bonus']
+            case "cha":
+                scores[5] += bonus['bonus']
+    
     proficienciesToAdd = []
     for item in classData['proficiencies']: 
         proficienciesToAdd.append(item)
@@ -285,29 +312,77 @@ def create_character(party, classData, raceData, name, equipmentToAdd=None):
                         
                         elif itemType['option_type'] == "choice": # expand into a category to choose from
                             add_default_equipment_from_category(itemType['choice']['from']['equipment_category']['url'], equipmentToAdd, itemType['choice']['choose'])
-    else:
-        print("\nYou have the following proficiencies and ability bonuses:") # tell the player character proficiencies
+
+        if "ability_bonus_options" in raceData.keys(): # if there are choices to add ability bonuses...     
+            # now add some generic ability bonuses from the options (no user input), for non-player-created characters
+            choices = raceData['ability_bonus_options']['choose'] # like 2 choices for example
+            optionList = raceData['ability_bonus_options']['from']['options']
+            while choices > 0:
+                choice = optionList[0] # the {dict} of the first (current) bonus to add...
+                match choice['ability_score']['index']:
+                    case "str":
+                        scores[0] += choice['bonus']
+                    case "dex":
+                        scores[1] += choice['bonus']
+                    case "con":
+                        scores[2] += choice['bonus']
+                    case "int":
+                        scores[3] += choice['bonus']
+                    case "wis":
+                        scores[4] += choice['bonus']
+                    case "cha":
+                        scores[5] += choice['bonus']
+                optionList.remove(choice)
+                choices -= 1
+                # repeat for other choices, adding first bonus every time...
+    else: # player's character
+        if "ability_bonus_options" in raceData.keys(): # if there are choices to add ability bonuses...     
+            choices = raceData['ability_bonus_options']['choose'] # like 2 choices for example
+            optionList = raceData['ability_bonus_options']['from']['options']
+            while choices > 0:
+                print(f"\nChoose {choices} of the following ability bonuses to add to your character using the numbers on the left.", style="bold yellow")
+                for i,option in enumerate(optionList):
+                    print(f"{i+1}) +{option['bonus']} to {option['ability_score']['name']}")
+                while True:
+                    try:
+                        nchoice = int(input("> ").strip())
+                        if 1 <= nchoice <= len(optionList):
+                            break
+                        else:
+                            print(f"Please enter a number between 1 and {len(optionList)}", style="bold red")
+                    except ValueError:
+                        print(f"Please enter a number between 1 and {len(optionList)}", style="bold red")
+                choice = optionList[nchoice-1] # the {dict} of the specific bonus to add...
+                match choice['ability_score']['index']:
+                    case "str":
+                        scores[0] += choice['bonus']
+                    case "dex":
+                        scores[1] += choice['bonus']
+                    case "con":
+                        scores[2] += choice['bonus']
+                    case "int":
+                        scores[3] += choice['bonus']
+                    case "wis":
+                        scores[4] += choice['bonus']
+                    case "cha":
+                        scores[5] += choice['bonus']
+                optionList.remove(choice)
+                choices -= 1
+                # repeat for other choices...
+        
+        print("\nYou have the following proficiencies:") # tell the player character proficiencies
         for prof in proficienciesToAdd:
             print(prof['name'])
-        for i in range(len(raceData['ability_bonuses'])):
-            print(f"+ {raceData['ability_bonuses'][i]['bonus']} to {raceData['ability_bonuses'][i]['ability_score']['name']}")
 
     
-    # create ability scores
-    scores = []
-    for _ in range(6):
-        rolls = []
-        for _ in range(4):
-            d6 = random.randint(1,6)
-            rolls.append(d6)    
-        rolls.remove(min(rolls))
-        scores.append(sum(rolls))
+
 
     hp = classData['hit_die'] + math.floor((scores[2]-10)/2) # generate hp from constitution modifier and class hit die
     character = Character(name, classData, raceData, equipmentToAdd, proficienciesToAdd, scores[0], scores[1], scores[2], scores[3], 
-                          scores[4], scores[5], max(10,math.floor(hp*1))) # +50% hp to be more generous, lowest is 10hp
-    print(f"\n{name} has the following equipment:")
+                          scores[4], scores[5], max(12,math.floor(hp*1))) # lowest is 12hp
+    print(f"\n{name} has the following equipment and stats:")
     character.show_equipment()
+    character.show_stats()
     party.add_member(character)
         
 if __name__ == "__main__":

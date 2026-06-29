@@ -62,22 +62,22 @@ class Character(Being):
         match (choice):
             case 1:
                 self.strength = min(self.strength+2,20) # cap at 20
-                print(f"{self.name}'s strength is now at {self.strength} points!", style="bold yellow")
+                print(f"{self.name}'s strength is now {self.strength}!", style="bold yellow")
             case 2:
                 self.dexterity = min(self.dexterity+2,20)
-                print(f"{self.name}'s dexterity is now at {self.dexterity} points!", style="bold yellow")
+                print(f"{self.name}'s dexterity is now {self.dexterity}!", style="bold yellow")
             case 3:
                 self.constitution = min(self.constitution+2,20)
-                print(f"{self.name}'s constitution is now at {self.constitution} points!", style="bold yellow")
+                print(f"{self.name}'s constitution is now {self.constitution}!", style="bold yellow")
             case 4:
                 self.intelligence = min(self.intelligence+2,20)
-                print(f"{self.name}'s intelligence is now at {self.intelligence} points!", style="bold yellow")
+                print(f"{self.name}'s intelligence is now {self.intelligence}!", style="bold yellow")
             case 5:
                 self.wisdom = min(self.wisdom+2,20)
-                print(f"{self.name}'s wisdom is now at {self.wisdom} points!", style="bold yellow")
+                print(f"{self.name}'s wisdom is now {self.wisdom}!", style="bold yellow")
             case 6:
                 self.charisma = min(self.charisma+2,20)
-                print(f"{self.name}'s charisma is now at {self.charisma} points!", style="bold yellow")
+                print(f"{self.name}'s charisma is now {self.charisma}!", style="bold yellow")
         # extra hit die...
         self.hp = self.level*self.classData['hit_die'] + self.get_bonus(self.constitution)*self.level # using potentially new constitution value, so recalculate
         self.maxHP = self.hp
@@ -103,8 +103,13 @@ class Character(Being):
         else:
             print()
     
+    def show_stats(self):
+        print(f"\nStrength: {self.strength}\nDexterity: {self.dexterity}\nConstitution: {self.constitution}\nIntelligence: {self.intelligence}\nWisdom: {self.wisdom}\nCharisma: {self.charisma}")
+    
     def choose_weapon(self):
-        self.weapons = sorted(self.weapons, key=lambda d: int(d['damage']['damage_dice'][d['damage']['damage_dice'].index("d")+1:]), reverse=True)
+        self.weapons = sorted(self.weapons, key=lambda d: round(
+            int(d['damage']['damage_dice'][:d['damage']['damage_dice'].index("d")]) * int(d['damage']['damage_dice'][d['damage']['damage_dice'].index("d")+1:])
+            ), reverse=True) # sort weapons by damage, accounting for multiple rolls like 2d6
         for i,item in enumerate(self.weapons):
             print(f"{i+1}) {item['name']} - {item['damage']['damage_dice']}", style="green")
         while True:
