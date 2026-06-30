@@ -5,6 +5,26 @@ from Party import Party
 from Character import Character
 from console_utils import cprint as print
 import events
+import game_data
+from game_data import game_data as gdata
+
+def get_or_load_equipment_item(item_reference):
+    if not isinstance(item_reference, dict) or not item_reference.get('index'):
+        return item_reference
+
+    cached_item = gdata.get_item(item_reference['index'])
+    if cached_item:
+        return cached_item
+
+    url = item_reference.get('url') or f"/api/2014/equipment/{item_reference['index']}"
+    if url.startswith('/api'):
+        response = requests.get(f"https://www.dnd5eapi.co{url}")
+    else:
+        response = requests.get(url)
+    response.raise_for_status()
+    item_data = response.json()
+    gdata.save_item(item_data)
+    return item_data
 
 def choose_from_equipment_category(url, equipmentToAdd, numChoices=1):
     response = requests.get(f"https://www.dnd5eapi.co{url}")
@@ -18,7 +38,7 @@ def choose_from_equipment_category(url, equipmentToAdd, numChoices=1):
             try:
                 choice = int(input("> ").strip())
                 if 1 <= choice <= len(listData['equipment']):
-                    itemToAdd = listData['equipment'][choice - 1]
+                    itemToAdd = get_or_load_equipment_item(listData['equipment'][choice - 1])
                     equipmentToAdd.append(itemToAdd)
                     break
                 else:
@@ -92,10 +112,12 @@ def get_equipment_options(optionSet):
     return options
 
 
-
-
 # start of game / setup
 def main():
+    print("Loading game data, please wait!",style="pink")
+    if not game_data.init_data(use_cache=True):
+        print("Failed to load game data!")
+        return
     print("\nWelcome to your grand adventure!", style="bold green")
     print("What is your name, adventurer? ")
     name = input("> ").strip().title()
@@ -115,9 +137,7 @@ def main():
             break
         else:
             print("Invalid choice. Please select a class from the list.\n", style="bold red")
-    url = f"https://www.dnd5eapi.co/api/2014/classes/{choice}"
-    response = requests.get(url)
-    classData = response.json()
+    classData = gdata.get_class(choice)
     print()
     
     url = "https://www.dnd5eapi.co/api/2014/races"
@@ -133,9 +153,7 @@ def main():
             break
         else:
             print("Invalid choice. Please select a race from the list.\n", style="bold red")
-    url = f"https://www.dnd5eapi.co/api/2014/races/{choice}"
-    response = requests.get(url)
-    raceData = response.json()
+    raceData = gdata.get_race(choice)
 
     print(f"\n{name} the mighty {raceData['name']} {classData['name']}! A wonderful choice.", style="bold green")
     print(raceData['language_desc'])
@@ -144,7 +162,7 @@ def main():
     equipmentToAdd = []
     for item in classData['starting_equipment']: # even if the class doesnt have starting equipment, check
         for _ in range(item['quantity']):
-            equipmentToAdd.append(item['equipment'])
+            equipmentToAdd.append(get_or_load_equipment_item(item['equipment']))
     
     if 'starting_equipment_options' in classData:
         for optionSet in classData['starting_equipment_options']:
@@ -190,7 +208,7 @@ def main():
 
                 if chosenOption['option_type'] == "counted_reference":
                     for _ in range(chosenOption['count']):
-                        itemToAdd = chosenOption['of']
+                        itemToAdd = get_or_load_equipment_item(chosenOption['of'])
                         equipmentToAdd.append(itemToAdd)
 
                 elif chosenOption['option_type'] == "multiple":
@@ -198,7 +216,7 @@ def main():
 
                         if newItem['option_type'] == 'counted_reference':
                             for _ in range(newItem['count']):
-                                itemToAdd = newItem['of']
+                                itemToAdd = get_or_load_equipment_item(newItem['of'])
                                 equipmentToAdd.append(itemToAdd)
 
                         elif newItem['option_type'] == 'choice':
@@ -236,12 +254,12 @@ def main():
                             for nested in newItem.get('items', []):
                                 if nested['option_type'] == 'counted_reference':
                                     for _ in range(nested['count']):
-                                        equipmentToAdd.append(nested['of'])
+                                        equipmentToAdd.append(get_or_load_equipment_item(nested['of']))
 
                 elif chosenOption['option_type'] == "choice":
                     choose_from_equipment_category(chosenOption['choice']['from']['equipment_category']['url'], equipmentToAdd, chosenOption['choice']['choose'])
                 elif chosenOption['option_type'] == "category_item":
-                    equipmentToAdd.append(chosenOption['of'])
+                    equipmentToAdd.append(get_or_load_equipment_item(chosenOption['of']))
                 
     
     party = Party()
@@ -294,7 +312,7 @@ def create_character(party, classData, raceData, name, equipmentToAdd=None):
         equipmentToAdd = []
         for item in classData['starting_equipment']: # even if the class doesnt have starting equipment, check
             for _ in range(item['quantity']):
-                equipmentToAdd.append(item['equipment'])
+                equipmentToAdd.append(get_or_load_equipment_item(item['equipment']))
         if 'starting_equipment_options' in classData: # some classes don't have this optional equipment, so check for it first
             for optionSet in classData['starting_equipment_options']:
                 numChoices = optionSet['choose']
@@ -307,7 +325,7 @@ def create_character(party, classData, raceData, name, equipmentToAdd=None):
                         
                         if itemType['option_type'] == "counted_reference": # simple, add X of this item
                             for _ in range(itemType['count']):
-                                itemToAdd = itemType['of']
+                                itemToAdd = get_or_load_equipment_item(itemType['of'])
                                 equipmentToAdd.append(itemToAdd)
                         
                         elif itemType['option_type'] == "choice": # expand into a category to choose from
@@ -374,12 +392,9 @@ def create_character(party, classData, raceData, name, equipmentToAdd=None):
         for prof in proficienciesToAdd:
             print(prof['name'])
 
-    
-
-
     hp = classData['hit_die'] + math.floor((scores[2]-10)/2) # generate hp from constitution modifier and class hit die
     character = Character(name, classData, raceData, equipmentToAdd, proficienciesToAdd, scores[0], scores[1], scores[2], scores[3], 
-                          scores[4], scores[5], max(12,math.floor(hp*1))) # lowest is 12hp
+                          scores[4], scores[5], max(12,math.floor(hp*1.5))) # lowest is 12hp, give +50% to be generous
     print(f"\n{name} has the following equipment and stats:")
     character.show_equipment()
     character.show_stats()

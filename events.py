@@ -1,6 +1,7 @@
 import requests, pprint
 import battles, main
 from console_utils import cprint as print
+from game_data import game_data
 # story events, in chronological order 
 
 def beginAdventure(party):
@@ -53,12 +54,9 @@ def roundabout(party):
     input("> ")
     # make Terry
     
-    url = "https://www.dnd5eapi.co/api/2014/classes/barbarian"
-    response = requests.get(url)
-    classData = response.json()
-    url = "https://www.dnd5eapi.co/api/2014/races/dragonborn"
-    response = requests.get(url)
-    raceData = response.json()
+
+    classData = game_data.get_class("barbarian")
+    raceData = game_data.get_race("dragonborn")
     main.create_character(party, classData, raceData, "Terry")
     
     # time to scrap 
@@ -237,12 +235,8 @@ def cathedral(party):
     )
     input("> ")
 
-    url = "https://www.dnd5eapi.co/api/2014/classes/cleric"
-    response = requests.get(url)
-    classData = response.json()
-    url = "https://www.dnd5eapi.co/api/2014/races/elf"
-    response = requests.get(url)
-    raceData = response.json()
+    classData = game_data.get_class("cleric")
+    raceData = game_data.get_race("elf")
     main.create_character(party, classData, raceData, "Raven")
     party.get_member_by_name("Raven").check_level_up(freeLevel=True) # start Raven at lv2, lets user choose what ability to level up
 

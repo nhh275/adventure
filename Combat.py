@@ -30,21 +30,30 @@ class Combat:
             print("\nCombat report:", style="bold cyan")
             size = max(len(self.enemies), len(self.team))
             for position, enemy, teamMember in zip_longest(range(1,size+1), self.enemies, self.team, fillvalue=''):
-                if teamMember == '' and enemy != '':
-                    print(f"{position}) {enemy.name} - {enemy.hp}HP", style="yellow")
-                elif teamMember != '' and enemy == '':
+                if teamMember == '' and enemy != '': # no Character
+                    print(f"{position}) {enemy.name} - {enemy.hp}HP", style="red")
+                elif teamMember != '' and enemy == '': # no Enemy
                     print(f"                                    {teamMember.name} - {teamMember.hp}HP", style="green")
-                else:
-                    print(f"{position}) {enemy.name} - {enemy.hp}HP                   {teamMember.name} - {teamMember.hp}HP", style="yellow")
+                else: # both present
+                    digitsDiff = len(str(enemy.hp)) - len(str(enemy.maxHP)) # if the enemy goes to 9hp from 20 for example, this will be -1, so adjust spaces:
+                    print(f"{position}) {enemy.name} - {enemy.hp}HP",style="red", end=f'                   {-digitsDiff*" "}')
+                    print(f"{teamMember.name} - {teamMember.hp}HP", style="green")
+        input(">") # break up info spam
         turn = 1
+        combat_ended = False 
         while True: # combat loop
-            self.take_turn(combatants, turn, currentCombatantCount)
-            turn += 1
-            # at end of turn, check if either team is fully dead
+            if not combat_ended:  # Only process if not ended
+                combat_ended = self.take_turn(combatants, turn, currentCombatantCount)
+                turn += 1
+                
+            # Check end conditions
             if not self.team:
                 return self.make_result(False)
             elif not self.enemies:
                 return self.make_result(True)
+        
+            if combat_ended:
+                break
     
     def take_turn(self,combatants, turn, currentCombatantCount):
         print(f"\n                      Turn {turn}", style="bold cyan")
@@ -88,16 +97,19 @@ class Combat:
                     continue
                 if not self.enemies:
                     return self.make_result(True) # all enemies dead
+
                 # player can choose an enemy to attack
                 print("\nCombat report:", style="bold cyan")
                 size = max(len(self.enemies), len(self.team))
                 for position, enemy, teamMember in zip_longest(range(1,size+1), self.enemies, self.team, fillvalue=''):
                     if teamMember == '' and enemy != '':
-                        print(f"{position}) {enemy.name} - {enemy.hp}HP", style="yellow")
+                        print(f"{position}) {enemy.name} - {enemy.hp}HP", style="red")
                     elif teamMember != '' and enemy == '':
                         print(f"                                    {teamMember.name} - {teamMember.hp}HP", style="green")
                     else:
-                        print(f"{position}) {enemy.name} - {enemy.hp}HP                   {teamMember.name} - {teamMember.hp}HP", style="yellow")
+                        digitsDiff = len(str(enemy.hp)) - len(str(enemy.maxHP)) # if the enemy goes to 9hp from 20 for example, this will be -1, so adjust spaces:
+                        print(f"{position}) {enemy.name} - {enemy.hp}HP",style="red", end=f'                   {-digitsDiff*" "}')
+                        print(f"{teamMember.name} - {teamMember.hp}HP", style="green")
 
                 print(f"\n{combatant.name}, which weapon do you want to use this turn?", style="bold")
                 combatant.choose_weapon()
@@ -122,6 +134,9 @@ class Combat:
                         self.enemies.remove(target)
                 elif not hit_result[0] and hit_result[1] != 1: # non-critical miss, display this message instead of crit miss message
                     print(f"\n{combatant.name} missed their attack on {target.name}.", style="gray")
+        if not self.enemies:
+            return True  
+        return False
     
     def calculate_hit(self, combatant, enemy): # combatant rolling the hit
         d20 = random.randint(1,20)

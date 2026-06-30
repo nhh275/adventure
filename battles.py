@@ -3,11 +3,13 @@ import random, requests
 from Enemy import Enemy
 from Combat import Combat
 from console_utils import cprint as print
+from game_data import game_data
 
 def battle(party, surprise, enemyIndex, numEnemiesLower, numEnemiesHigher=0): # DRY subroutine to work with any enemy, rather than 1 routine per enemy
-    url = f"https://www.dnd5eapi.co/api/2014/monsters/{enemyIndex}" # like goblin or ghoul
-    response = requests.get(url)
-    enemyData = response.json() 
+    # url = f"https://www.dnd5eapi.co/api/2014/monsters/{enemyIndex}" # like goblin or ghoul
+    # response = requests.get(url)
+    # enemyData = response.json() 
+    enemyData = game_data.get_monster(enemyIndex)
     if numEnemiesHigher < numEnemiesLower: # just 1 enemy, a higher bound has not been passed in (0 default)
         numEnemies = numEnemiesLower
     else:

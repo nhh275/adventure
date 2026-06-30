@@ -8,6 +8,7 @@ class Being(ABC):
     def __init__(self, name, hp):
         self.name = name
         self.hp = hp
+        self.maxHP = hp
         self.alive = True
         self.weapon = None
         self.AC = 10  # default AC
