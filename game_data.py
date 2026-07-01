@@ -4,7 +4,7 @@ import requests
 from typing import Dict, Optional
 
 class GameDataManager:    
-    def __init__(self):
+    def __init__(self): # dicts of index:dataDict
         self.monsters = {}
         self.spells = {}
         self.items = {}
@@ -15,12 +15,9 @@ class GameDataManager:
         
     def load_all(self, use_cache=True) -> bool:
         # monsters
-        url = 'https://www.dnd5eapi.co/api/2014/monsters/goblin'
-        self.monsters['goblin'] = requests.get(url).json()
-        url = 'https://www.dnd5eapi.co/api/2014/monsters/skeleton'
-        self.monsters['skeleton'] = requests.get(url).json()
-        url = 'https://www.dnd5eapi.co/api/2014/monsters/ghoul'
-        self.monsters['ghoul'] = requests.get(url).json()
+        self.monsters['goblin'] = requests.get('https://www.dnd5eapi.co/api/2014/monsters/goblin').json()
+        self.monsters['skeleton'] = requests.get('https://www.dnd5eapi.co/api/2014/monsters/skeleton').json()
+        self.monsters['ghoul'] = requests.get('https://www.dnd5eapi.co/api/2014/monsters/ghoul').json()
         
         # classes
         url = 'https://www.dnd5eapi.co/api/2014/classes'

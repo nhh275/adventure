@@ -242,8 +242,69 @@ def cathedral(party):
 
 def park(party):
     print(
-        "\nPlaceholder. "
-        "Here.",
+        "\nYou decide you need to take in some nature, so you go for a leisurely stroll in the nearby park. The Swindon air is refreshing after your previous stressful ordeal, and you "
+        "take the time to look around and observe your surroundings. Scattered with people who seem neither thrilled nor disappointed by the cloudy day, the park is calming and gives you "
+        "a chance to reflect on the reason you came to town today.",
         style="cyan"
     )
     input("> ")
+    print(
+        "\nAfter some time, you come upon a bench and go to rest your legs - it has been a busy morning, after all. As you approach, you notice a glistening metal object leaning on the side of "
+        "the bench. Its golden shine despite the lack of sunlight attracts you, and you pick it up to inspect. Its full size now in your hands, you realise this is a weapon! It seems to have "
+        "been left here, and perhaps for a reason, as you read its inscription.",
+        style="cyan"
+    )
+    input("> ")
+    
+    player = party.members[0]
+    proficiency = player.find_proficiency()
+    wpn = {}
+    match proficiency:
+        case "simple-weapons":
+            wpn['index'] = "mace-of-brigitte"
+            wpn['name'] = "Mace of Brigitte"
+            wpn['equipment_category'] = {'index':'weapon', 'name': 'Weapon', 'url':'/api/2014/equipment-categories/weapon'}
+            wpn['weapon_category'] = "simple"
+            wpn['weapon_range'] = "melee"
+            wpn['damage'] = {'damage_dice': '3d6'}
+        case "martial-weapons":
+            wpn['index'] = "warhammer-of-40k"
+            wpn['name'] = "Warhammer of 40k"
+            wpn['equipment_category'] = {'index':'weapon', 'name': 'Weapon', 'url':'/api/2014/equipment-categories/weapon'}
+            wpn['weapon_category'] = "martial"
+            wpn['weapon_range'] = "melee"
+            wpn['damage'] = {'damage_dice': '3d8'}
+        case "unarmed":
+            wpn['index'] = "broken-bottle-of-swindon"
+            wpn['name'] = "Broken Bottle of Swindon"
+            wpn['equipment_category'] = {'index':'weapon', 'name': 'Weapon', 'url':'/api/2014/equipment-categories/weapon'}
+            wpn['weapon_range'] = "melee"
+            wpn['damage'] = {'damage_dice': '4d4'}
+    player.add_weapon_to_list(wpn)
+    player.proficiencies.append({'index': wpn['index']})
+    print(
+        f"\nAs you read the words, your eyes widen. You found the Legendary {wpn['name']}! Tales have been told of its power and dominance in this area over the years, but it had been "
+        "thought to have been lost to time. Nobody around seems to notice or care that you have picked it up, so you decide to pocket it in case you get into any more scrapes later. "
+        "Slightly overcome by its beauty and historical heft, you take a moment to come to terms with what you have obtained, lounging on the bench and muttering 'I can't believe this...'",
+        style="cyan"
+    )
+    input(">")
+    print(
+        "\nAs you reflect on how wild the day has been, you are approached by an individual clad in hot pink. They introduce themselves, saying 'You're right to take it. That weapon belongs "
+        "to you - it is your destiny.' You're naturally taken aback and ask for some elaboration, to which they respond 'Apologies. I am an assistant of a noble Swindon priest named Raven. "
+        "I have been instructed to guide you on your journey in this city.' You weren't aware you had a journey to go on, but are intrigued nonetheless, inquiring further.",
+        style="cyan"
+    )
+    input(">")
+    print(
+        "\nThe person tells you that there is a great evil troubling the good people of Swindon - something mysterious that no one quite knows the identity of - and it's up to you to put an "
+        "end to it. 'Why me?', you ask, but the figure in pink simply tells you, 'All will become clear in time.' You're given directions on where to go first in the heroic quest you seem to "
+        "have accepted, and the assistant even offers to join yout travelling party to help you. She says, 'Oh, by the way, my name is Angelina! I've been studying magic my whole life, and "
+        "I'm ready to help save the city - especially since you've been chosen by such a legendary item!'",
+        style="cyan"
+    )
+    input(">")
+    classData = game_data.get_class("wizard")
+    raceData = game_data.get_race("human")
+    main.create_character(party, classData, raceData, "Angelina")
+    party.get_member_by_name("Angelina").check_level_up(freeLevel=True) # start Angelina at lv2, lets user choose what ability to level up

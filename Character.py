@@ -161,7 +161,16 @@ class Character(Being):
                     if self.weapon['index'] in proficiency['index']: # like 'handaxe' in 'handaxes'
                         self.proficientWeapon = 1 + math.ceil(self.level/4)
                         break        
-        
+    
+    def find_proficiency(self):
+        profs = []
+        for proficiency in self.proficiencies:
+                if "-weapons" in proficiency['index']:
+                    profs.append(proficiency['index']) # simple-weapons or martial-weapons
+        # no weapon type proficiency
+        if len(profs) > 0:
+            return random.choice(profs) # martial or simple, if both proficient
+        return "unarmed" # no wpn proficiency                  
     
     def add_weapon_to_list(self, weaponToAdd):
         if 'damage' in weaponToAdd: # check if the equipment has a damage attribute (it can be used as a weapon)
