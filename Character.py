@@ -111,7 +111,10 @@ class Character(Being):
             int(d['damage']['damage_dice'][:d['damage']['damage_dice'].index("d")]) * int(d['damage']['damage_dice'][d['damage']['damage_dice'].index("d")+1:])
             ), reverse=True) # sort weapons by damage, accounting for multiple rolls like 2d6
         for i,item in enumerate(self.weapons):
-            print(f"{i+1}) {item['name']} - {item['damage']['damage_dice']}", style="yellow")
+            if "cost" not in item.keys(): # legendary weapon (self created)
+                print(f"{i+1}) Legendary {item['name']} - {item['damage']['damage_dice']}", style="gold1")
+            else:
+                print(f"{i+1}) {item['name']} - {item['damage']['damage_dice']}", style="dodger_blue3")
         while True:
             try:
                 choice = int(input("> ").strip())

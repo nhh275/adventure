@@ -40,20 +40,15 @@ class Combat:
                     print(f"{teamMember.name} - {teamMember.hp}HP", style="green")
         input(">") # break up info spam
         turn = 1
-        combat_ended = False 
         while True: # combat loop
-            if not combat_ended:  # Only process if not ended
-                combat_ended = self.take_turn(combatants, turn, currentCombatantCount)
-                turn += 1
-                
-            # Check end conditions
-            if not self.team:
+            turn_result = self.take_turn(combatants, turn, currentCombatantCount)
+            if turn_result == 0: # team lost
                 return self.make_result(False)
-            elif not self.enemies:
+            elif turn_result == 1: # team won
                 return self.make_result(True)
-        
-            if combat_ended:
-                break
+            else: # combat ongoing
+                turn += 1
+            
     
     def take_turn(self,combatants, turn, currentCombatantCount):
         print(f"\n                      Turn {turn}", style="bold cyan")
@@ -78,7 +73,7 @@ class Combat:
                 if not combatant.alive: # killed, no turn
                     continue
                 if not self.team:
-                    return self.make_result(False) # all team members dead
+                    return 0 # all team members dead, loss
                 # enemy attacks random team member
                 target = random.choice(list(self.team)) # gets a Character from the Party
                 hit_result = self.calculate_hit(combatant, target)
@@ -96,7 +91,7 @@ class Combat:
                 if not combatant.alive:
                     continue
                 if not self.enemies:
-                    return self.make_result(True) # all enemies dead
+                    return 1 # all enemies dead, win
 
                 # player can choose an enemy to attack
                 print("\nCombat report:", style="bold cyan")
@@ -135,8 +130,8 @@ class Combat:
                 elif not hit_result[0] and hit_result[1] != 1: # non-critical miss, display this message instead of crit miss message
                     print(f"\n{combatant.name} missed their attack on {target.name}.", style="gray")
         if not self.enemies:
-            return True  
-        return False
+            return 1  
+        return 2 # no end
     
     def calculate_hit(self, combatant, enemy): # combatant rolling the hit
         d20 = random.randint(1,20)

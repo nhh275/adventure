@@ -6,9 +6,6 @@ from console_utils import cprint as print
 from game_data import game_data
 
 def battle(party, surprise, enemyIndex, numEnemiesLower, numEnemiesHigher=0): # DRY subroutine to work with any enemy, rather than 1 routine per enemy
-    # url = f"https://www.dnd5eapi.co/api/2014/monsters/{enemyIndex}" # like goblin or ghoul
-    # response = requests.get(url)
-    # enemyData = response.json() 
     enemyData = game_data.get_monster(enemyIndex)
     if numEnemiesHigher < numEnemiesLower: # just 1 enemy, a higher bound has not been passed in (0 default)
         numEnemies = numEnemiesLower
@@ -21,4 +18,8 @@ def battle(party, surprise, enemyIndex, numEnemiesLower, numEnemiesHigher=0): # 
     
     # undergo combat
     combat = Combat(party.members, enemies, surprise)
-    return combat.start_combat() # returns tuple of (Success, xpListToAdd)
+    resultTuple = combat.start_combat() # returns tuple of (Success, xpListToAdd)
+    if not resultTuple[0]:
+        return
+    party.give_xp(resultTuple[1]) # list of xp from enemies to add to party members
+    party.heal_party()

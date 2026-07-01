@@ -61,10 +61,6 @@ def roundabout(party):
     
     # time to scrap 
     resultTuple = battles.battle(party, surprise=0, enemyIndex="goblin", numEnemiesLower=2, numEnemiesHigher=3)
-    if not resultTuple[0]:
-        return
-    party.give_xp(resultTuple[1]) # list of xp from enemies to add to party members
-    party.heal_party()
     print(
         "\nFollowing your great victory, you pause in the traffic created by the commotion to rest and heal your wounds. "
         "Others around you seem to be relatively unfazed by what you've been through, as if this is just a regular occurrence in Swindon, and the car in front eventually drives off to "
@@ -97,10 +93,6 @@ def city(party):
     input("> ")
     
     resultTuple = battles.battle(party, surprise=0, enemyIndex="skeleton", numEnemiesLower=1)
-    if not resultTuple[0]:
-        return
-    party.give_xp(resultTuple[1]) # list of xp from enemies to add to party members
-    party.heal_party()
     
     print(
         "\nFollowing your great victory, you pause by the roadside to rest and heal your wounds. "
@@ -180,10 +172,6 @@ def supermarket(party):
         input(">")
         resultTuple = battles.battle(party, surprise=1, enemyIndex="ghoul", numEnemiesLower=1) # team surprised
     
-    if not resultTuple[0]:
-        return
-    party.give_xp(resultTuple[1]) # list of xp from enemies to add to party members
-    party.heal_party()
         
 def cathedral(party):   
     print(
