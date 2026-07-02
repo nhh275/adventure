@@ -14,7 +14,6 @@ class Enemy(Being):
         
     def set_weapon(self):
         self.weapon = None  # in case no weapon found, set to None
-        
         inline_weapons = [] # try to find weapons with inline damage data, like for Apes
         if 'actions' in self.enemyData:
             for action in self.enemyData['actions']:

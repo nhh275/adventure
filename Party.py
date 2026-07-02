@@ -14,6 +14,8 @@ class Party:
         for member in self.members:
             member.hp = member.maxHP # reset to full health, typically after combat win
             member.alive = True
+            if len(member.ammo) > 0:
+                member.ammo['quantity'] = member.ammo['maxQuantity'] # refill ammo
     
     def give_xp(self, xpList):
         print(f"The party gained {sum(xpList)}XP!\n", style="bold yellow")

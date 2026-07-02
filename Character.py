@@ -120,16 +120,19 @@ class Character(Being):
                 choice = int(input("> ").strip())
                 if 1 <= choice <= len(self.weapons):
                     self.set_weapon(self.weapons[choice-1])
+                    print(self.ammo)
                     break
                 else:
-                    print(f"Please enter a number between 1 and {len(self.weapons)}", style="bold red")
+                    print(f"Please enter a number between 1 and {len(self.weapons)}", style="bold red") # invalid int
             except ValueError:
-                print(f"Please enter a number between 1 and {len(self.weapons)}", style="bold red")
-        
+                print(f"Please enter a number between 1 and {len(self.weapons)}", style="bold red") # not int
+        if self.wpnUsesAmmo and not self.use_ammo():
+            self.choose_weapon()   
         
     def categorise_items(self):
         self.weapons = []
         self.armours = []
+        self.ammo = {}
         for item in self.equipment:
             item_index = item['index'] if isinstance(item, dict) else item
             itemData = game_data.get_item(item_index)
@@ -139,9 +142,9 @@ class Character(Being):
                 itemData = response.json()
                 game_data.save_item(itemData)
             if not self.add_weapon_to_list(itemData): # not a weapon, maybe armour?
-                self.add_armour_to_list(itemData) 
+                if not self.add_armour_to_list(itemData): # not armour, ammo?
+                    self.add_ammo_to_list(itemData)
 
-    
     def set_weapon(self, weaponToEquip=None): 
         if weaponToEquip is None:
             self.weapon = None
@@ -152,6 +155,13 @@ class Character(Being):
             if "damage" in weaponToEquip: # equip this - do not add it to the list, new weapons will run add_weapon_to_list directly
                 self.weapon = weaponToEquip
         
+        self.wpnUsesAmmo = False
+        if "properties" in self.weapon.keys():
+            for property in self.weapon['properties']:
+                if property['index'] == "ammunition":
+                    self.wpnUsesAmmo = True
+        
+        # weapon chosen, calculate proficiency
         if self.weapon is None: # no Weapon equipped, always proficient with unarmed
             self.proficientWeapon = 1 + math.ceil(self.level/4) # round up, so +2 for level 1-4 etc
         else: # a weapon has been equipped
@@ -163,7 +173,7 @@ class Character(Being):
                 else: # check for 1-1 proficiency in the weapon itself
                     if self.weapon['index'] in proficiency['index']: # like 'handaxe' in 'handaxes'
                         self.proficientWeapon = 1 + math.ceil(self.level/4)
-                        break        
+                        break   
     
     def find_proficiency(self):
         profs = []
@@ -179,14 +189,34 @@ class Character(Being):
         if 'damage' in weaponToAdd: # check if the equipment has a damage attribute (it can be used as a weapon)
             self.weapons.append(weaponToAdd)
             return True
-        else:
-            return False
+        return False
     
     def add_armour_to_list(self, armourToAdd):
         if 'armor_class' in armourToAdd: # check if the equipment has an armour attribute (it can be used as armour)
             self.armours.append(armourToAdd)
             return True
+        return False
+    
+    def add_ammo_to_list(self, ammoToAdd):
+        if "gear_category" in ammoToAdd.keys():
+            if ammoToAdd['gear_category']['index'] == "ammunition":
+                if len(self.ammo) != 0: # already some of this ammo type stored
+                    #self.ammo['quantity'] += ammoToAdd['quantity']
+                    #self.ammo['maxQuantity'] += ammoToAdd['quantity']
+                    self.ammo['quantity'] += 1
+                    self.ammo['maxQuantity'] += 1
+                else: # first occurence of this type of ammo
+                    #self.ammo = {'name':ammoToAdd['index'], 'quantity':ammoToAdd['quantity'], 'maxQuantity':ammoToAdd['quantity']}
+                    self.ammo = {'name':ammoToAdd['index'], 'quantity':1, 'maxQuantity':1}
+                return True
+            return False
+
+    def use_ammo(self):
+        if self.ammo['quantity'] > 0:
+            self.ammo['quantity'] -= 1
+            return True
         else:
+            print(f"{self.name} has no more {self.ammo['name']}s left!", style="bold red")
             return False
         
     def set_AC(self):

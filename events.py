@@ -60,7 +60,8 @@ def roundabout(party):
     main.create_character(party, classData, raceData, "Terry")
     
     # time to scrap 
-    resultTuple = battles.battle(party, surprise=0, enemyIndex="goblin", numEnemiesLower=2, numEnemiesHigher=3)
+    if not battles.battle(party, surprise=0, enemyIndex="goblin", numEnemiesLower=2, numEnemiesHigher=3): # false, failed battle
+        return
     print(
         "\nFollowing your great victory, you pause in the traffic created by the commotion to rest and heal your wounds. "
         "Others around you seem to be relatively unfazed by what you've been through, as if this is just a regular occurrence in Swindon, and the car in front eventually drives off to "
@@ -92,7 +93,8 @@ def city(party):
           "clanking sound, which emanates from its hollow body as it shifts in place. Looking down at it, its eyes turn red, piercing into your soul, and it charges you!", style="cyan")
     input("> ")
     
-    resultTuple = battles.battle(party, surprise=0, enemyIndex="skeleton", numEnemiesLower=1)
+    if not battles.battle(party, surprise=0, enemyIndex="skeleton", numEnemiesLower=1):
+        return
     
     print(
         "\nFollowing your great victory, you pause by the roadside to rest and heal your wounds. "
@@ -161,7 +163,8 @@ def supermarket(party):
             style="cyan"
         )
         input("> ")
-        resultTuple = battles.battle(party, surprise=2, enemyIndex="ghoul", numEnemiesLower=1) # enemies surprised
+        if not battles.battle(party, surprise=2, enemyIndex="ghoul", numEnemiesLower=1): # enemies surprised
+            return
     else: # could not perceive anything
         print(
             "\nYou do not find anything wrong with the cashier, so you make idle small talk with them as is your duty as a British citizen, mentioning the terrible weather and so on. "
@@ -170,7 +173,8 @@ def supermarket(party):
             style="cyan"
         )
         input(">")
-        resultTuple = battles.battle(party, surprise=1, enemyIndex="ghoul", numEnemiesLower=1) # team surprised
+        if not battles.battle(party, surprise=1, enemyIndex="ghoul", numEnemiesLower=1): # team surprised
+            return
     
         
 def cathedral(party):   

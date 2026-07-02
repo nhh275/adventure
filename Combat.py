@@ -38,7 +38,8 @@ class Combat:
                     digitsDiff = len(str(enemy.hp)) - len(str(enemy.maxHP)) # if the enemy goes to 9hp from 20 for example, this will be -1, so adjust spaces:
                     print(f"{position}) {enemy.name} - {enemy.hp}HP",style="red", end=f'                   {-digitsDiff*" "}')
                     print(f"{teamMember.name} - {teamMember.hp}HP", style="green")
-        input(">") # break up info spam
+        
+        time.sleep(1) # break up info spam
         turn = 1
         while True: # combat loop
             turn_result = self.take_turn(combatants, turn, currentCombatantCount)
@@ -151,6 +152,12 @@ class Combat:
                 desiredStat = "strength"
             else:
                 desiredStat = "dexterity"
+            
+            # finesse:
+            if "properties" in combatant.weapon.keys():
+                for property in combatant.weapon['properties']:
+                    if property['index'] == "finesse":
+                        desiredStat = "dexterity" if combatant.dexterity > combatant.strength else "strength"
         
         if isinstance(combatant, Enemy.Enemy): # enemy trying to hit party member
             monsterData = combatant.enemyData

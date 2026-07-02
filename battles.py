@@ -19,7 +19,9 @@ def battle(party, surprise, enemyIndex, numEnemiesLower, numEnemiesHigher=0): # 
     # undergo combat
     combat = Combat(party.members, enemies, surprise)
     resultTuple = combat.start_combat() # returns tuple of (Success, xpListToAdd)
-    if not resultTuple[0]:
-        return
-    party.give_xp(resultTuple[1]) # list of xp from enemies to add to party members
+    if not resultTuple[0]: # loss
+        return False
+    
     party.heal_party()
+    party.give_xp(resultTuple[1]) # list of xp from enemies to add to party members
+    return True
